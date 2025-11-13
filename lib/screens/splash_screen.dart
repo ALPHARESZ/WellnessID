@@ -75,87 +75,117 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width > 600;
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SlideTransition(
-                position: _moveLogo,
-                child: FadeTransition(
-                  opacity: _fadeLogo,
-                  child: Image.asset(
-                    'assets/images/Logo.jpg',
-                    width: 180,
-                    height: 180,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              FadeTransition(
-                opacity: _fadeText,
-                child: Column(
-                  children: [
-                    RichText(
-                      text: const TextSpan(
-                        style: TextStyle(
-                          fontSize: 28, fontWeight: FontWeight.bold),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          TextSpan(
-                            text: 'Wellness',
-                            style: TextStyle(color: Color(0xFF003B88))),
-                          TextSpan(
-                            text: 'ID',
-                            style: TextStyle(color: Color(0xFF006FFF))),
+                          SlideTransition(
+                            position: _moveLogo,
+                            child: FadeTransition(
+                              opacity: _fadeLogo,
+                              child: Image.asset(
+                                'assets/images/Logo.jpg',
+                                width: isTablet ? 220 : 180,
+                                height: isTablet ? 220 : 180,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: isTablet ? 30 : 20),
+                          FadeTransition(
+                            opacity: _fadeText,
+                            child: Column(
+                              children: [
+                                RichText(
+                                  textAlign: TextAlign.center,
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: isTablet ? 34 : 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    children: const [
+                                      TextSpan(
+                                        text: 'Wellness',
+                                        style: TextStyle(color: Color(0xFF003B88)),
+                                      ),
+                                      TextSpan(
+                                        text: 'ID',
+                                        style: TextStyle(color: Color(0xFF006FFF)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Ayo Cek Kondisi Kamu',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: isTablet ? 18 : 16,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: isTablet ? 50 : 40),
+                          FadeTransition(
+                            opacity: _fadeButton,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isTablet ? 80 : 40,
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: isTablet ? 56 : 48,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF22B3E4),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    elevation: 4,
+                                  ),
+                                  child: Text(
+                                    'Mulai Aplikasi',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      color: Colors.white,
+                                      fontSize: isTablet ? 18 : 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Ayo Cek Kondisi Kamu',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 40),
-              FadeTransition(
-                opacity: _fadeButton,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF22B3E4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 4,
-                      ),
-                      child: const Text(
-                        'Mulai Aplikasi',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600),
-                      ),
-                    ),
                   ),
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
