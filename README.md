@@ -1,4 +1,4 @@
-# wellnessid
+# WellnessID
 
 A new Flutter project.
 
