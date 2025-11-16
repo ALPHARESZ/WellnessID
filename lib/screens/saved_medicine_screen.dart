@@ -6,18 +6,29 @@ import '../widgets/page_header.dart';
 import '../widgets/card_list.dart';
 import '../widgets/confirmation_popup.dart';
 
-class SavedMedicineScreen extends StatelessWidget {
+class SavedMedicineScreen extends StatefulWidget {
   const SavedMedicineScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, String>> medicines = [
-      {"title": "Paracetamol", "subtitle": "Deskripsi: Lorem Ipsum..."},
-      {"title": "Etanol", "subtitle": "Deskripsi: Lorem Ipsum..."},
-      {"title": "Antibiotik", "subtitle": "Deskripsi: Lorem Ipsum..."},
-      {"title": "Minyak Makan", "subtitle": "Deskripsi: Lorem Ipsum..."},
-    ];
+  State<SavedMedicineScreen> createState() => _SavedMedicineScreenState();
+}
 
+class _SavedMedicineScreenState extends State<SavedMedicineScreen> {
+  List<Map<String, String>> medicines = [
+    {"title": "Paracetamol", "subtitle": "Deskripsi: Lorem Ipsum..."},
+    {"title": "Etanol", "subtitle": "Deskripsi: Lorem Ipsum..."},
+    {"title": "Antibiotik", "subtitle": "Deskripsi: Lorem Ipsum..."},
+    {"title": "Minyak Makan", "subtitle": "Deskripsi: Lorem Ipsum..."},
+  ];
+
+  void _deleteMedicine(int index) {
+    setState(() {
+      medicines.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
 
@@ -34,7 +45,6 @@ class SavedMedicineScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             const SizedBox(height: 10),
 
             const SearchBarWidget(
@@ -45,10 +55,22 @@ class SavedMedicineScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             Expanded(
-              child: ListView.builder(
+              child: medicines.isEmpty? 
+            Center(
+                child: Text(
+                  "Tidak ada obat tersimpan",
+                  style: TextStyle(
+                    fontFamily: "Poppins",
+                    fontSize: 18,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              )
+              :ListView.builder(
                 itemCount: medicines.length,
                 itemBuilder: (context, index) {
                   final item = medicines[index];
+  
                   return CardList(
                     title: item["title"]!,
                     subtitle: item["subtitle"]!,
@@ -63,7 +85,7 @@ class SavedMedicineScreen extends StatelessWidget {
                               title: "Hapus Obat?",
                               onConfirm: () {
                                 Navigator.pop(context);
-                                // TODO: tambahkan logic hapus jika sudah ada databasenya
+                                _deleteMedicine(index);
                               },
                               onCancel: () {
                                 Navigator.pop(context);
