@@ -38,7 +38,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
         preferredSize: const Size.fromHeight(60),
         child: PageHeader(
           title: 'Diagnosa Penyakit',
-          onBack: () => Navigator.pop(context),
+          onBack: () => context.pop(),
         ),
       ),
 

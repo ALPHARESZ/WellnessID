@@ -31,7 +31,7 @@ class _IdentityScreenState extends State<IdentityScreen> {
             children: [
               PageHeader(
                 title: "Diagnosa Penyakit",
-                onBack: () => Navigator.pop(context),
+                onBack: () => context.pop(),
               ),
 
               const SizedBox(height: 10),
@@ -123,7 +123,7 @@ class _IdentityScreenState extends State<IdentityScreen> {
               Center(
                 child: GestureDetector(
                   onTap: () {
-                    context.go('/symptoms');
+                    context.push('/symptoms');
                   },
                   child: Container(
                     width: 300,
