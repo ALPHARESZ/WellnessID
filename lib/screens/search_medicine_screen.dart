@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../widgets/search.dart';
 import '../widgets/page_header.dart';
 
-class SearchDiseaseScreen extends StatelessWidget {
-  const SearchDiseaseScreen({super.key});
+class SearchMedicineScreen extends StatelessWidget {
+  const SearchMedicineScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class SearchDiseaseScreen extends StatelessWidget {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56),
         child: PageHeader(
-          title: "Cari Info Penyakit",
+          title: "Cari Info Obat",
           onBack: () => context.pop(),
         ),
       ),
@@ -25,10 +25,10 @@ class SearchDiseaseScreen extends StatelessWidget {
             const SizedBox(height: 10),
 
             SearchBarWidget(
-              hint: "Cari Info Penyakit di sini",
+              hint: "Cari Info Obat di sini",
               icon: Icons.search,
               onTap: () {
-                context.push('/disease-result');
+                context.push('/medicine-result');
               },
             ),
 
@@ -45,7 +45,7 @@ class SearchDiseaseScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   const Text(
-                    "Silahkan Cari Informasi Penyakit",
+                    "Silahkan Cari Informasi Obat",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,

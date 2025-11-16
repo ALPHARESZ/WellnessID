@@ -16,7 +16,7 @@ class DiagnoseResultPage extends StatelessWidget {
         preferredSize: const Size.fromHeight(56),
         child: PageHeader(
           title: "Diagnosa Penyakit",
-          onBack: () => Navigator.pop(context),
+          onBack: () => context.pop(),
         ),
       ),
 
@@ -30,7 +30,7 @@ class DiagnoseResultPage extends StatelessWidget {
               title: "Covid",
               subtitle: "Kecocokan: Sangat Kuat",
               onTap: () {
-                context.go('/detail');
+                context.go('/disease-detail');
               },
             ),
 
@@ -38,7 +38,7 @@ class DiagnoseResultPage extends StatelessWidget {
               title: "Influenza",
               subtitle: "Kecocokan: Kuat",
               onTap: () {
-                context.go('/detail');
+                context.go('/disease-detail');
               },
             ),
 
@@ -46,7 +46,7 @@ class DiagnoseResultPage extends StatelessWidget {
               title: "Malaria",
               subtitle: "Kecocokan: Sedang",
               onTap: () {
-                context.go('/detail');
+                context.go('/disease-detail');
               },
             ),
 
@@ -54,7 +54,7 @@ class DiagnoseResultPage extends StatelessWidget {
               title: "Radang Tenggorokan",
               subtitle: "Kecocokan: Lemah",
               onTap: () {
-                context.go('/detail');
+                context.go('/disease-detail');
               },
             ),
 

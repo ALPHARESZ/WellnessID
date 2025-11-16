@@ -3,10 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../widgets/page_header.dart';
 
-class DetailScreen extends StatelessWidget {
+class DiseaseDetailScreen extends StatelessWidget {
   final String diseaseName;
 
-  const DetailScreen({
+  const DiseaseDetailScreen({
     super.key,
     this.diseaseName = "Covid",
   });
@@ -19,8 +19,8 @@ class DetailScreen extends StatelessWidget {
         child: Column(
           children: [
             PageHeader(
-              title: "Diagnosa Penyakit",
-              onBack: () => Navigator.pop(context)
+              title: "Detail Penyakit",
+              onBack: () => context.pop(),
             ),
 
             Expanded(

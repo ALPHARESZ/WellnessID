@@ -10,10 +10,15 @@ import '../screens/splash_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/identity_screen.dart';
 import '../screens/symptoms_screen.dart';
-import '../screens/result_screen.dart';
-import '../screens/detail_screen.dart';
+import '../screens/diagnose_result_screen.dart';
+import '../screens/disease_detail_screen.dart';
 import '../screens/search_disease_screen.dart';
 import '../screens/disease_result_screen.dart';
+import '../screens/medicine_screen.dart';
+import '../screens/search_medicine_screen.dart';
+import '../screens/medicine_result_screen.dart';
+import '../screens/medicine_detail_screen.dart';
+import '../screens/saved_medicine_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -69,9 +74,9 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const DiagnoseResultPage(),
     ),
     GoRoute(
-      path: '/detail',
-      name: 'detail',
-      builder: (context, state) => const DetailScreen(),
+      path: '/disease-detail',
+      name: 'disease-detail',
+      builder: (context, state) => const DiseaseDetailScreen(),
     ),
     GoRoute(
       path: '/search-disease',
@@ -82,6 +87,31 @@ final GoRouter appRouter = GoRouter(
       path: '/disease-result',
       name: 'disease-result',
       builder: (context, state) => const DiseaseResultPage(),
+    ),
+    GoRoute(
+      path: '/medicine',
+      name: 'medicine',
+      builder: (context, state) => const MedicineScreen(),
+    ),
+    GoRoute(
+      path: '/search-medicine',
+      name: 'search_medicine',
+      builder: (context, state) => const SearchMedicineScreen(),
+    ),
+    GoRoute(
+      path: '/medicine-result',
+      name: 'medicine-result',
+      builder: (context, state) => const MedicineResultScreen(),
+    ),
+    GoRoute(
+      path: '/saved-medicine',
+      name: 'saved-medicine',
+      builder: (context, state) => const SavedMedicineScreen(),
+    ),
+    GoRoute(
+      path: '/medicine-detail',
+      name: 'medicine-detail',
+      builder: (context, state) => const MedicineDetailScreen(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

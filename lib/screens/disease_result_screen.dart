@@ -10,7 +10,6 @@ class DiseaseResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy data for UI preview
     final List<Map<String, String>> diseases = [
       {"title": "Kanker Otak Stadium 1", "subtitle": "Saran Obat: Lorem Ipsum..."},
       {"title": "Kanker Otak Stadium 2", "subtitle": "Saran Obat: Lorem Ipsum..."},
@@ -25,7 +24,7 @@ class DiseaseResultPage extends StatelessWidget {
         preferredSize: const Size.fromHeight(56),
         child: PageHeader(
           title: "Cari Info Penyakit",
-          onBack: () => Navigator.pop(context),
+          onBack: () => context.pop(),
         ),
       ),
 
@@ -37,7 +36,6 @@ class DiseaseResultPage extends StatelessWidget {
             
             const SizedBox(height: 10),
 
-            // Search Widget
             const SearchBarWidget(
               hint: "Kanker Otak",
               icon: Icons.search,
@@ -45,7 +43,6 @@ class DiseaseResultPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // List Results
             Expanded(
               child: ListView.builder(
                 itemCount: diseases.length,
@@ -55,7 +52,7 @@ class DiseaseResultPage extends StatelessWidget {
                     title: item["title"]!,
                     subtitle: item["subtitle"]!,
                     onTap: () {
-                      context.go('/detail');
+                      context.push('/disease-detail');
                     },
                   );
                 },

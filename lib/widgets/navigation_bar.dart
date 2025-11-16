@@ -18,7 +18,7 @@ class AppNavigationBar extends StatelessWidget {
             context.go('/home');
             break;
           case 1:
-            context.go('/diagnosa');
+            context.go('/medicine');
             break;
           case 2:
             context.go('/chat');
@@ -35,7 +35,7 @@ class AppNavigationBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Image.asset('assets/images/Logo.jpg', width: 24),
-          label: 'Diagnosa',
+          label: 'Medicine',
         ),
         BottomNavigationBarItem(
           icon: Image.asset('assets/images/Logo.jpg', width: 24),

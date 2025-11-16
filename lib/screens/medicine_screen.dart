@@ -3,15 +3,15 @@ import 'package:go_router/go_router.dart';
 
 import '../widgets/navigation_bar.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class MedicineScreen extends StatelessWidget {
+  const MedicineScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
 
-      bottomNavigationBar: const AppNavigationBar(currentIndex: 0),
+      bottomNavigationBar: const AppNavigationBar(currentIndex: 1),
 
       body: SafeArea(
         child: Column(
@@ -59,7 +59,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: GestureDetector(
-                onTap: () => context.push('/identity'),
+                onTap: () => context.push('/search-medicine'),
                 child: Container(
                   height: 135,
                   decoration: BoxDecoration(
@@ -89,7 +89,7 @@ class HomeScreen extends StatelessWidget {
                       const Padding(
                         padding: EdgeInsets.only(right: 30),
                         child: Text(
-                          'Diagnosa\nPenyakit',
+                          'Cari Info\nObat',
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             fontSize: 18,
@@ -110,7 +110,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: GestureDetector(
-                onTap: () => context.push('/search-disease'),
+                onTap: () => context.push('/saved-medicine'),
                 child: Container(
                   height: 135,
                   decoration: BoxDecoration(
@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
                       const Padding(
                         padding: EdgeInsets.only(right: 30),
                         child: Text(
-                          'Cari Info\nPenyakit',
+                          'Obat\nTersimpan',
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             fontSize: 18,
