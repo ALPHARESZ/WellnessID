@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -41,20 +42,26 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _logoController, curve: const Interval(0.0, 0.6)),
     );
 
-    _moveLogo = Tween<Offset>(
-      begin: const Offset(0, 0),
-      end: const Offset(0, -0.4),
-    ).animate(
-      CurvedAnimation(parent: _logoController, curve: const Interval(0.4, 1.0)),
-    );
+    _moveLogo =
+        Tween<Offset>(
+          begin: const Offset(0, 0),
+          end: const Offset(0, -0.4),
+        ).animate(
+          CurvedAnimation(
+            parent: _logoController,
+            curve: const Interval(0.4, 1.0),
+          ),
+        );
 
-    _fadeText = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
-    );
+    _fadeText = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
 
-    _fadeButton = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _buttonController, curve: Curves.easeIn),
-    );
+    _fadeButton = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _buttonController, curve: Curves.easeIn));
 
     _startAnimation();
   }
@@ -80,7 +87,6 @@ class _SplashScreenState extends State<SplashScreen>
     final isLandscape = orientation == Orientation.landscape;
     final isTablet = size.width > 600;
 
-    // Sesuaikan ukuran berdasarkan orientasi
     final logoSize = isLandscape
         ? (isTablet ? 160.0 : 120.0)
         : (isTablet ? 220.0 : 180.0);
@@ -106,7 +112,10 @@ class _SplashScreenState extends State<SplashScreen>
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: isLandscape ? 8 : 24),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: isLandscape ? 8 : 24,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -165,12 +174,16 @@ class _SplashScreenState extends State<SplashScreen>
                       FadeTransition(
                         opacity: _fadeButton,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: horizontalPadding,
+                          ),
                           child: SizedBox(
                             width: double.infinity,
                             height: buttonHeight,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                context.goNamed('login');
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF22B3E4),
                                 shape: RoundedRectangleBorder(
