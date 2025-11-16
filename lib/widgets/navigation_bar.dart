@@ -21,10 +21,10 @@ class AppNavigationBar extends StatelessWidget {
             context.go('/medicine');
             break;
           case 2:
-            context.go('/chat');
+            context.go('/home');
             break;
           case 3:
-            context.go('/pengaturan');
+            context.go('/profile');
             break;
         }
       },

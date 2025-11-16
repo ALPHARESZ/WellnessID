@@ -28,7 +28,6 @@ class ConfirmationPopup extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               
-              // TITLE
               Text(
                 title,
                 style: const TextStyle(
@@ -40,11 +39,9 @@ class ConfirmationPopup extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // BUTTONS
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // CANCEL BUTTON
                   GestureDetector(
                     onTap: onCancel,
                     child: Container(
@@ -66,7 +63,6 @@ class ConfirmationPopup extends StatelessWidget {
 
                   const SizedBox(width: 20),
 
-                  // CONFIRM BUTTON
                   GestureDetector(
                     onTap: onConfirm,
                     child: Container(

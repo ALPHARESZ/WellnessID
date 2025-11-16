@@ -20,7 +20,7 @@ class MedicineDetailScreen extends StatelessWidget {
           children: [
             PageHeader(
               title: "Detail Obat",
-              onBack: () => Navigator.pop(context)
+              onBack: () => context.pop()
             ),
 
             Expanded(

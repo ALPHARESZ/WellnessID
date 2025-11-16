@@ -19,6 +19,8 @@ import '../screens/search_medicine_screen.dart';
 import '../screens/medicine_result_screen.dart';
 import '../screens/medicine_detail_screen.dart';
 import '../screens/saved_medicine_screen.dart';
+import '../screens/profile_screen.dart';
+import '../screens/diagnose_detail_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -112,6 +114,16 @@ final GoRouter appRouter = GoRouter(
       path: '/medicine-detail',
       name: 'medicine-detail',
       builder: (context, state) => const MedicineDetailScreen(),
+    ),
+    GoRoute(
+      path: '/profile',
+      name: 'profile',
+      builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/diagnose-detail',
+      name: 'diagnose-detail',
+      builder: (context, state) => const DiagnoseDetailScreen(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
