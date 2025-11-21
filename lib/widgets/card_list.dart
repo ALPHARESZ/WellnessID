@@ -52,7 +52,7 @@ class CardList extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: subtitle.split(":").first + ": ",
+                          text: "${subtitle.split(":").first}: ",
                           style: const TextStyle(
                             fontFamily: "Poppins",
                             fontSize: 15,

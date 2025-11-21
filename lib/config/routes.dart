@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wellnessid/screens/delete_account_screen.dart';
+import 'package:wellnessid/screens/input_box_screen.dart';
 
 import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
@@ -21,6 +23,9 @@ import '../screens/medicine_detail_screen.dart';
 import '../screens/saved_medicine_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/diagnose_detail_screen.dart';
+import '../screens/setting_screen.dart';
+import '../screens/change_profile_screen.dart';
+import '../screens/change_password_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -124,6 +129,31 @@ final GoRouter appRouter = GoRouter(
       path: '/diagnose-detail',
       name: 'diagnose-detail',
       builder: (context, state) => const DiagnoseDetailScreen(),
+    ),
+    GoRoute(
+      path: '/setting',
+      name: 'setting,',
+      builder: (context, state) => const SettingScreen(),
+    ),
+    GoRoute(
+      path: '/input-box',
+      name: 'input-box,',
+      builder: (context, state) => const InputBoxScreen(),
+    ),
+    GoRoute(
+      path: '/change-profile',
+      name: 'change-profile,',
+      builder: (context, state) => const ChangeProfile(),
+    ),
+    GoRoute(
+      path: '/change-password',
+      name: 'change-password,',
+      builder: (context, state) => const ChangePassword(),
+    ),
+    GoRoute(
+      path: '/delte-account',
+      name: 'delte-account,',
+      builder: (context, state) => const DeleteAccount(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
