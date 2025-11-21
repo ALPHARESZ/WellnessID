@@ -1,0 +1,248 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+class DeleteAccount extends StatefulWidget {
+  const DeleteAccount({super.key});
+
+  @override
+  State<DeleteAccount> createState() => _DeleteAccountState();
+}
+
+class _DeleteAccountState extends State<DeleteAccount> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passController = TextEditingController();
+  final TextEditingController confirmPassController = TextEditingController();
+
+  bool obscure1 = true;
+  bool obscure2 = true;
+
+  void _showConfirmDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 320,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Hapus Akun?",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 100,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 6,
+                                  offset: const Offset(2, 4))
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Tidak",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+
+                          context.go("/login");
+                        },
+                        child: Container(
+                          width: 100,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 6,
+                                  offset: const Offset(2, 4))
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Ya",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _inputField(
+      {required String label,
+      required TextEditingController controller,
+      bool obscure = false,
+      VoidCallback? onToggle}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xffe8f0fe),
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 6,
+                  offset: const Offset(2, 4))
+            ],
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: obscure,
+            decoration: InputDecoration(
+              hintText: label,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              border: InputBorder.none,
+              suffixIcon: onToggle != null
+                  ? IconButton(
+                      icon: const Icon(Icons.visibility_off),
+                      onPressed: onToggle,
+                    )
+                  : null,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xfffafafa),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(
+          "Hapus Akun",
+          style: TextStyle(
+            color: Colors.red,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _inputField(
+                label: "Email",
+                controller: emailController,
+                obscure: false),
+
+            const SizedBox(height: 25),
+
+            _inputField(
+              label: "Kata Sandi",
+              controller: passController,
+              obscure: obscure1,
+              onToggle: () {
+                setState(() {
+                  obscure1 = !obscure1;
+                });
+              },
+            ),
+
+            const SizedBox(height: 25),
+
+            _inputField(
+              label: "Konfirmasi Kata Sandi",
+              controller: confirmPassController,
+              obscure: obscure2,
+              onToggle: () {
+                setState(() {
+                  obscure2 = !obscure2;
+                });
+              },
+            ),
+
+            const Spacer(),
+
+            GestureDetector(
+              onTap: _showConfirmDialog,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 6,
+                        offset: const Offset(2, 4))
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  "Hapus Akun",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}

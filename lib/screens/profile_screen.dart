@@ -13,7 +13,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  List<Map<String, String>> _diagnosisHistory = [
+  final List<Map<String, String>> _diagnosisHistory = [
     {"title": "Hasil Diagnosa 1", "subtitle": "Tanggal Diagnosa: 10 - 10 - 2025"},
     {"title": "Hasil Diagnosa 2", "subtitle": "Tanggal Diagnosa: 14 - 10 - 2025"},
   ];
@@ -47,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.settings, color: Colors.white, size: 28),
                       onPressed: () {
-                        context.push('/pengaturan');
+                        context.push('/setting');
                       },
                     ),
                   ),
