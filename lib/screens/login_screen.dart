@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
+import '../utils/validators.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +16,58 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailC = TextEditingController();
   final TextEditingController passC = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    emailC.dispose();
+    passC.dispose();
+    super.dispose();
+  }
+
+  Future<void> _logIn() async {
+    // Validate inputs
+    final email = emailC.text.trim();
+    final password = passC.text;
+    // Basic validation
+    final emailError = Validators.validateEmail(email);
+    if (emailError != null) {
+      SnackbarHelper.showError(context, emailError);
+      return;
+    }
+    final passwordError = Validators.validatePassword(password);
+    if (passwordError != null) {
+      SnackbarHelper.showError(context, passwordError);
+      return;
+    }
+    // Set loading state
+    setState(() => _isLoading = true);
+    // Call AuthProvider
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.logInWithEmail(
+      email: email,
+      password: password,
+    );
+    // Reset loading state
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+
+    // Handle result
+    if (success) {
+      if (mounted) {
+        SnackbarHelper.showSuccess(context, 'Berhasil Masuk!');
+        context.go('/home');
+      }
+    } else {
+      if (mounted) {
+        final errorMessage = authProvider.errorMessage ?? 'Gagal Masuk!';
+        SnackbarHelper.showError(context, errorMessage);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +144,8 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: TextField(
                   controller: emailC,
+                  enabled: !_isLoading,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     labelText: "Email",
@@ -112,7 +171,8 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: TextField(
                   controller: passC,
-                  obscureText: true,
+                  enabled: !_isLoading,
+                  obscureText: _obscurePassword,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     labelText: "Kata Sandi",
@@ -129,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text(
                     "Lupa Kata Sandi? →",
                     style: TextStyle(
-                      color: Color(0xFF006FFF),
+                      color: Colors.lightBlue,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -142,9 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    context.go('/home');
-                  },
+                  onPressed: _isLoading ? null : _logIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF22B3E4),
                     shape: RoundedRectangleBorder(
@@ -174,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text(
                       "Daftar",
                       style: TextStyle(
-                        color: Color(0xFF006FFF),
+                        color: Colors.lightBlue,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
+import '../utils/validators.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -19,19 +24,60 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _obscurePass = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
-  void _register() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Pendaftaran Berhasil!"),
-          backgroundColor: Colors.green,
-        ),
-      );
 
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.pushReplacementNamed(context, '/login');
-      });
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _register() async {
+    // Validate inputs
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    // Basic validation
+    final emailError = Validators.validateEmail(email);
+    if (emailError != null) {
+      SnackbarHelper.showError(context, emailError);
+      return;
+    }
+
+    final passwordError = Validators.validatePassword(password);
+    if (passwordError != null) {
+      SnackbarHelper.showError(context, passwordError);
+      return;
+    }
+
+    // Set loading state
+    setState(() => _isLoading = true);
+
+    // Call AuthProvider
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.registerWithEmail(
+      email: email,
+      password: password,
+    );
+
+    // Reset loading state
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+
+    // Handle result
+    if (success) {
+      if (mounted) {
+        SnackbarHelper.showSuccess(context, 'Sign up berhasil!');
+        context.go('/home');
+      }
+    } else {
+      if (mounted) {
+        final errorMessage = authProvider.errorMessage ?? 'Sign up gagal';
+        SnackbarHelper.showError(context, errorMessage);
+      }
     }
   }
 
@@ -143,7 +189,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: _register,
+                  onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.lightBlue,
                     shape: RoundedRectangleBorder(

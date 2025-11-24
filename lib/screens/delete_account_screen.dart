@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
 
 class DeleteAccount extends StatefulWidget {
   const DeleteAccount({super.key});
@@ -16,92 +20,94 @@ class _DeleteAccountState extends State<DeleteAccount> {
   bool obscure1 = true;
   bool obscure2 = true;
 
-  void _showConfirmDialog() {
+  Future<void> _deleteAccount() async {
+    final authProvider = context.read<AuthProvider>();
+
+    final success = await authProvider.deleteAccount(
+      email: emailController.text.trim(),
+      password: passController.text,
+    );
+
+    if (success) {
+      if (mounted) {
+        SnackbarHelper.showSuccess(context, 'Berhasil Hapus Akun!');
+        context.go('/login');
+      }
+    } else {
+      if (mounted) {
+        final errorMessage = authProvider.errorMessage ?? 'Gagal Hapus Akun!';
+        SnackbarHelper.showError(context, errorMessage);
+      }
+    }
+  }
+
+  void _showDeleteAccountDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return Center(
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: 320,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Hapus Akun?",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Hapus Akun?",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
 
-                  const SizedBox(height: 25),
+                const SizedBox(height: 16),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          width: 100,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 6,
-                                  offset: const Offset(2, 4))
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            "Tidak",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                const Text(
+                  "Akun Anda akan dihapus permanen dan tidak dapat dipulihkan.",
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade300,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      child: const Text("Batal"),
+                    ),
 
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-
-                          context.go("/login");
-                        },
-                        child: Container(
-                          width: 100,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.redAccent,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 6,
-                                  offset: const Offset(2, 4))
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            "Ya",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await _deleteAccount;
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ],
-                  )
-                ],
-              ),
+                      child: const Text("Hapus"),
+                    ),
+                  ],
+                )
+              ],
             ),
           ),
         );
@@ -214,7 +220,7 @@ class _DeleteAccountState extends State<DeleteAccount> {
             const Spacer(),
 
             GestureDetector(
-              onTap: _showConfirmDialog,
+              onTap: _showDeleteAccountDialog,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 18),

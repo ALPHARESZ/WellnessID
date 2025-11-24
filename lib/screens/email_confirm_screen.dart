@@ -116,6 +116,24 @@ class _ResetEmailPageState extends State<ResetEmailPage> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Sudah Punya Akun? "),
+                  GestureDetector(
+                    onTap: () => context.go('/login'),
+                    child: const Text(
+                      "Masuk",
+                      style: TextStyle(
+                          color: Colors.lightBlue,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
