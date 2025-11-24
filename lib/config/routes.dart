@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wellnessid/screens/delete_account_screen.dart';
-import 'package:wellnessid/screens/input_box_screen.dart';
 
 import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
@@ -24,11 +23,32 @@ import '../screens/saved_medicine_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/diagnose_detail_screen.dart';
 import '../screens/setting_screen.dart';
+import '../screens/input_box_screen.dart';
 import '../screens/change_profile_screen.dart';
 import '../screens/change_password_screen.dart';
+import '../screens/delete_account_screen.dart';
+
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
+  redirect: (context, state) {
+    final user = FirebaseAuth.instance.currentUser;
+    final isAuthenticated = user != null;
+    final isAuthRoute =
+        state.matchedLocation == '/login' ||
+        state.matchedLocation == '/register' ||
+        state.matchedLocation == '/reset-email' ||
+        state.matchedLocation == '/otp' ||
+        state.matchedLocation == '/reset-password';
+    if (!isAuthenticated && !isAuthRoute) {
+      return '/login';
+    }
+    if (isAuthenticated && isAuthRoute) {
+      return '/home';
+    }
+    return null;
+  },
+  refreshListenable: AuthStateNotifier(),
   routes: [
     GoRoute(
       path: '/',
@@ -151,8 +171,8 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const ChangePassword(),
     ),
     GoRoute(
-      path: '/delte-account',
-      name: 'delte-account,',
+      path: '/delete-account',
+      name: 'delete-account,',
       builder: (context, state) => const DeleteAccount(),
     ),
   ],
@@ -160,3 +180,11 @@ final GoRouter appRouter = GoRouter(
     body: Center(child: Text('Halaman tidak ditemukan: ${state.error}')),
   ),
 );
+
+class AuthStateNotifier extends ChangeNotifier {
+  AuthStateNotifier() {
+    FirebaseAuth.instance.authStateChanges().listen((_) {
+      notifyListeners();
+    });
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../widgets/navigation_bar.dart';
 import '../widgets/card_list.dart';
@@ -13,6 +14,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final user = FirebaseAuth.instance.currentUser;
   final List<Map<String, String>> _diagnosisHistory = [
     {"title": "Hasil Diagnosa 1", "subtitle": "Tanggal Diagnosa: 10 - 10 - 2025"},
     {"title": "Hasil Diagnosa 2", "subtitle": "Tanggal Diagnosa: 14 - 10 - 2025"},
@@ -76,8 +78,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 10),
 
-            const Text(
-              "Anwar Winata",
+            Text(
+              '${user!.email}',
               style: TextStyle(
                 fontSize: 26,
                 fontFamily: 'Poppins',

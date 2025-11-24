@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
+import '../utils/snackbar_helper.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -11,11 +14,24 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   bool expandAkun = false;
-  Future<void> _logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('userData');
-    context.go('/login');
+
+    Future<void> _logOut() async {
+    // Call AuthProvider
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.logOut();
+
+    // Handle result
+    if (success) {
+      if (mounted) {
+        SnackbarHelper.showSuccess(context, 'Berhasil Keluar!');
+        context.go('/login');
+      }
+    } else {
+      if (mounted) {
+        final errorMessage = authProvider.errorMessage ?? 'Gagal Keluar';
+        SnackbarHelper.showError(context, errorMessage);
+      }
+    }
   }
 
   void _showLogoutDialog() {
@@ -60,10 +76,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     ),
 
                     ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await _logout(context);
-                      },
+                      onPressed: _logOut,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
@@ -74,86 +87,6 @@ class _SettingScreenState extends State<SettingScreen> {
                         ),
                       ),
                       child: const Text("Ya"),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _deleteAccount() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    context.go('/login');
-  }
-
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Hapus Akun?",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                const Text(
-                  "Akun Anda akan dihapus permanen dan tidak dapat dipulihkan.",
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 24),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade300,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text("Batal"),
-                    ),
-
-                    ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await _deleteAccount();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text("Hapus"),
                     ),
                   ],
                 )
@@ -241,7 +174,7 @@ class _SettingScreenState extends State<SettingScreen> {
                   "Hapus Akun",
                   style: TextStyle(color: Colors.red),
                 ),
-                onTap: _showDeleteAccountDialog,
+                onTap: () => context.push("/delete-account"),
               ),
             ),
           ]
