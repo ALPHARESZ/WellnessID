@@ -92,7 +92,7 @@ class _DeleteAccountState extends State<DeleteAccount> {
                     ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(context);
-                        await _deleteAccount;
+                        await _deleteAccount();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
