@@ -11,6 +11,7 @@ class SearchMedicineScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
+
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56),
         child: PageHeader(
@@ -18,17 +19,23 @@ class SearchMedicineScreen extends StatelessWidget {
           onBack: () => context.pop(),
         ),
       ),
+
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
             const SizedBox(height: 10),
 
+            /// Search field
             SearchBarWidget(
               hint: "Cari Info Obat di sini",
               icon: Icons.search,
               onSubmitted: (value) {
-                context.push('/medicine-result');
+                final keyword = value.trim();
+                if (keyword.isNotEmpty) {
+                  // kirim keyword ke halaman hasil
+                  context.push('/medicine-result', extra: keyword);
+                }
               },
             ),
 
