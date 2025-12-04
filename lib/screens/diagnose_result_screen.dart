@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../services/expert_system_service.dart';
 import '../widgets/card_list.dart';
 import '../widgets/page_header.dart';
+import '../models/disease.dart';
 
 class DiagnoseResultPage extends StatelessWidget {
   const DiagnoseResultPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final List<String> selectedSymptomIds =
+        (GoRouterState.of(context).extra as List).cast<String>();
+
+    final expertSystem = ExpertSystemService();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56),
         child: PageHeader(
@@ -19,99 +25,75 @@ class DiagnoseResultPage extends StatelessWidget {
           onBack: () => context.pop(),
         ),
       ),
+      body: FutureBuilder<Disease?>(
+        future: expertSystem.diagnose(selectedSymptomIds),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: ListView(
-          children: [
-            const SizedBox(height: 10),
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Terjadi error: ${snapshot.error}',
+                style: const TextStyle(fontFamily: 'Poppins'),
+              ),
+            );
+          }
 
-            CardList(
-              title: "Covid",
-              subtitle: "Kecocokan: Sangat Kuat",
-              onTap: () {
-                context.go('/disease-detail');
-              },
-            ),
+          final result = snapshot.data;
 
-            CardList(
-              title: "Influenza",
-              subtitle: "Kecocokan: Kuat",
-              onTap: () {
-                context.go('/disease-detail');
-              },
-            ),
-
-            CardList(
-              title: "Malaria",
-              subtitle: "Kecocokan: Sedang",
-              onTap: () {
-                context.go('/disease-detail');
-              },
-            ),
-
-            CardList(
-              title: "Radang Tenggorokan",
-              subtitle: "Kecocokan: Lemah",
-              onTap: () {
-                context.go('/disease-detail');
-              },
-            ),
-
-            const SizedBox(height: 30),
-
-            CardList(
-              title: "Paracetamol",
-              subtitle: "Deskripsi: Lorem Ipsum...",
-              trailing: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF22B3E3),
-                  shape: BoxShape.circle,
+          if (result == null) {
+            return const Center(
+              child: Text(
+                "Tidak ditemukan penyakit yang cocok dengan gejala yang dipilih.",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Poppins',
                 ),
-                child: const Icon(
-                  Icons.add,
-                  size: 22,
-                  color: Colors.white,
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: ListView(
+              children: [
+                const SizedBox(height: 10),
+
+                CardList(
+                  title: result.name,
+                  subtitle: "Tingkat kecocokan: ${((selectedSymptomIds.length / result.symptomIds.length) * 100).toInt()}%",
+                  onTap: () {
+                    context.go('/disease-detail', extra: result);
+                  },
                 ),
-              ),
-              onTap: () {
 
-              },
-            ),
+                const SizedBox(height: 30),
 
-            const SizedBox(height: 30),
-          ],
-        ),
-      ),
+                const Text(
+                  "Solusi",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: "Poppins",
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
 
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
-        color: const Color(0xFFF8F9FE),
-        child: SizedBox(
-          height: 56,
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              context.push('/home');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF22B3E3),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(40),
-              ),
+                const SizedBox(height: 10),
+
+                CardList(
+                  title: "Rekomendasi",
+                  subtitle: result.description,
+                  onTap: () {},
+                ),
+
+                const SizedBox(height: 30),
+              ],
             ),
-            child: const Text(
-              "Simpan Diagnosa",
-              style: TextStyle(
-                fontSize: 18,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
