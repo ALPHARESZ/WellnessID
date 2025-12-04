@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-
 import '../widgets/page_header.dart';
+import '../services/disease_service.dart';
 
 class DiseaseDetailScreen extends StatelessWidget {
-  final String diseaseName;
+  final String diseaseId;
 
-  const DiseaseDetailScreen({
-    super.key,
-    this.diseaseName = "Covid",
-  });
+  const DiseaseDetailScreen({super.key, required this.diseaseId});
 
   @override
   Widget build(BuildContext context) {
@@ -23,75 +20,58 @@ class DiseaseDetailScreen extends StatelessWidget {
             ),
 
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Column(
-                  children: [
-                    Text(
-                      diseaseName,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+              child: FutureBuilder(
+                future: DiseaseService().getDiseaseById(diseaseId),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                    _buildSection(
-                      title: "Gejala",
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text("• Gejala 1"),
-                          Text("• Gejala 2"),
-                          Text("• Gejala 3"),
-                          Text("• Gejala 4"),
-                          Text("• Gejala 5"),
-                          Text("• Gejala 6"),
-                          Text("• Gejala 7"),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
+                  final data = snapshot.data!;
+                  final symptoms = List<String>.from(data['symptoms']);
 
-                    _buildSection(
-                      title: "Cara Pencegahan",
-                      child: const Text(
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-                        "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                        "Ut enim ad minim veniam...",
-                        textAlign: TextAlign.justify,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data['name'],
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
 
-                    _buildSection(
-                      title: "Cara Penanganan",
-                      child: const Text(
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-                        "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                        textAlign: TextAlign.justify,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
+                        const SizedBox(height: 20),
 
-                    _buildSection(
-                      title: "Saran Obat",
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text("• Obat 1"),
-                          Text("• Obat 2"),
-                          Text("• Obat 3"),
-                          Text("• Obat 4"),
-                          Text("• Obat 5"),
-                          Text("• Obat 6"),
-                          Text("• Obat 7"),
-                        ],
-                      ),
+                        _buildSection(
+                          title: "Deskripsi",
+                          child: Text(data['description']),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        _buildSection(
+                          title: "Gejala",
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: symptoms.map((s) => Text("• $s")).toList(),
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        _buildSection(
+                          title: "Cara Penanganan",
+                          child: Text(data['solution']),
+                        ),
+
+                        const SizedBox(height: 30),
+                      ],
                     ),
-                    const SizedBox(height: 30),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],

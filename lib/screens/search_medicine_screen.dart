@@ -27,7 +27,7 @@ class SearchMedicineScreen extends StatelessWidget {
             SearchBarWidget(
               hint: "Cari Info Obat di sini",
               icon: Icons.search,
-              onTap: () {
+              onSubmitted: (value) {
                 context.push('/medicine-result');
               },
             ),

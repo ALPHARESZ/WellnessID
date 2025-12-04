@@ -24,11 +24,15 @@ class SearchDiseaseScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
 
+            // SearchBarWidget sekarang punya onSubmitted: (String)
             SearchBarWidget(
               hint: "Cari Info Penyakit di sini",
               icon: Icons.search,
-              onTap: () {
-                context.push('/disease-result');
+              onSubmitted: (value) {
+                final keyword = value.trim();
+                if (keyword.isNotEmpty) {
+                  context.push('/disease-result', extra: keyword);
+                }
               },
             ),
 

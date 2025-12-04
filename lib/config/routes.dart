@@ -101,19 +101,23 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const DiagnoseResultPage(),
     ),
     GoRoute(
-      path: '/disease-detail',
-      name: 'disease-detail',
-      builder: (context, state) => const DiseaseDetailScreen(),
-    ),
-    GoRoute(
       path: '/search-disease',
       name: 'search_disease',
       builder: (context, state) => const SearchDiseaseScreen(),
     ),
     GoRoute(
       path: '/disease-result',
-      name: 'disease-result',
-      builder: (context, state) => const DiseaseResultPage(),
+      builder: (context, state) {
+        final keyword = state.extra as String;
+        return DiseaseResultScreen(keyword: keyword);
+      },
+    ),
+    GoRoute(
+      path: '/disease-detail',
+      builder: (context, state) {
+        final id = state.extra as String;
+        return DiseaseDetailScreen(diseaseId: id);
+      },
     ),
     GoRoute(
       path: '/medicine',
