@@ -4,26 +4,22 @@ import 'package:go_router/go_router.dart';
 import '../widgets/search.dart';
 import '../widgets/page_header.dart';
 import '../widgets/card_list.dart';
+import '../services/disease_service.dart';
 
-class DiseaseResultPage extends StatelessWidget {
-  const DiseaseResultPage({super.key});
+class DiseaseResultScreen extends StatelessWidget {
+  final String keyword;
+
+  const DiseaseResultScreen({super.key, required this.keyword});
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> diseases = [
-      {"title": "Kanker Otak Stadium 1", "subtitle": "Saran Obat: Lorem Ipsum..."},
-      {"title": "Kanker Otak Stadium 2", "subtitle": "Saran Obat: Lorem Ipsum..."},
-      {"title": "Kanker Otak Stadium 3", "subtitle": "Saran Obat: Lorem Ipsum..."},
-      {"title": "Kanker Otak Stadium 4", "subtitle": "Saran Obat: Lorem Ipsum..."},
-    ];
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
 
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56),
         child: PageHeader(
-          title: "Cari Info Penyakit",
+          title: "Hasil Pencarian",
           onBack: () => context.pop(),
         ),
       ),
@@ -31,28 +27,48 @@ class DiseaseResultPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             const SizedBox(height: 10),
 
-            const SearchBarWidget(
-              hint: "Kanker Otak",
+            // Search bar yang bekerja
+            SearchBarWidget(
+              hint: keyword,
               icon: Icons.search,
+              onSubmitted: (value) {
+                context.push('/disease-result', extra: value);
+              },
             ),
 
             const SizedBox(height: 20),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: diseases.length,
-                itemBuilder: (context, index) {
-                  final item = diseases[index];
-                  return CardList(
-                    title: item["title"]!,
-                    subtitle: item["subtitle"]!,
-                    onTap: () {
-                      context.push('/disease-detail');
+              child: FutureBuilder(
+                future: DiseaseService().searchDisease(keyword),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text("Tidak ada hasil ditemukan."),
+                    );
+                  }
+
+                  final results = snapshot.data!;
+
+                  return ListView.builder(
+                    itemCount: results.length,
+                    itemBuilder: (context, index) {
+                      final item = results[index];
+
+                      return CardList(
+                        title: item["name"] ?? "",
+                        subtitle: item["description"] ?? "",
+                        onTap: () {
+                          context.push("/disease-detail", extra: item["id"]);
+                        },
+                      );
                     },
                   );
                 },
