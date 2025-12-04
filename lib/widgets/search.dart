@@ -4,12 +4,14 @@ class SearchBarWidget extends StatelessWidget {
   final String hint;
   final IconData icon;
   final Function(String)? onSubmitted;
+  final ValueChanged<String>? onChanged; // 🟢 tambahan
 
   const SearchBarWidget({
     super.key,
     required this.hint,
     required this.icon,
     this.onSubmitted,
+    this.onChanged, // 🟢 tambahan
   });
 
   @override
@@ -27,8 +29,10 @@ class SearchBarWidget extends StatelessWidget {
 
           Expanded(
             child: TextField(
+              onChanged: onChanged, // 🟢 tambahan (pencarian real-time)
+              onSubmitted: onSubmitted, // tetap bisa submit manual
               decoration: InputDecoration(
-                hintText: hint,          // ← placeholder kini aktif
+                hintText: hint,
                 border: InputBorder.none,
                 hintStyle: const TextStyle(
                   fontSize: 16,
@@ -38,7 +42,6 @@ class SearchBarWidget extends StatelessWidget {
                 ),
               ),
               textInputAction: TextInputAction.search,
-              onSubmitted: onSubmitted,  // ← fungsi pencarian
             ),
           ),
         ],
