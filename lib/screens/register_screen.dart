@@ -58,9 +58,11 @@ class _RegisterPageState extends State<RegisterPage> {
     // Call AuthProvider
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.registerWithEmail(
-      email: email,
-      password: password,
-    );
+    email: email,
+    password: password,
+    displayName: _nameController.text.trim(),
+  );
+
 
     // Reset loading state
     if (mounted) {
