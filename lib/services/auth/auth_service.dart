@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   factory AuthService() => _instance;
   AuthService._internal();
 
@@ -14,28 +16,37 @@ class AuthService {
   User? get currentUser => _auth.currentUser;
   bool get isAuthenticated => currentUser != null;
 
-  Future<UserCredential> registerWithEmail({
+  Future<void> registerWithEmail({
     required String email,
     required String password,
     String? displayName,
   }) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email.trim(),
+      // 1. Create user via Firebase Auth
+      UserCredential userCred = await _auth.createUserWithEmailAndPassword(
+        email: email,
         password: password,
       );
 
-      // Set display name jika disediakan
+      final uid = userCred.user!.uid;
+
+      // 2. Update display name (optional)
       if (displayName != null && displayName.isNotEmpty) {
-        await credential.user?.updateDisplayName(displayName);
-        await credential.user?.reload();
+        await userCred.user!.updateDisplayName(displayName);
       }
 
-      return credential;
+      // 3. Simpan data user ke Firestore
+      await _firestore.collection("users").doc(uid).set({
+        "uid": uid,
+        "name": displayName ?? "",
+        "email": email,
+        "createdAt": FieldValue.serverTimestamp(),
+      });
+
     } on FirebaseAuthException catch (e) {
-      throw _handleFirebaseAuthException(e);
+      throw AuthException(e.message ?? "Terjadi kesalahan");
     } catch (e) {
-      throw AuthException('Sign up failed: ${e.toString()}');
+      throw AuthException(e.toString());
     }
   }
 
@@ -207,27 +218,32 @@ class AuthService {
   }
 
   Future<bool> deleteAccount({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      // Re-authenticate user
-      final credential = EmailAuthProvider.credential(
-        email: email.trim(),
-        password: password,
-      );
-      await _requireUser().reauthenticateWithCredential(credential);
+  required String email,
+  required String password,
+}) async {
+  try {
+    // Re-authenticate
+    final credential = EmailAuthProvider.credential(
+      email: email.trim(),
+      password: password,
+    );
+    User user = _requireUser();
+    await user.reauthenticateWithCredential(credential);
 
-      // Delete user account
-      await _requireUser().delete();
-      return true;
-    } on FirebaseAuthException catch (e) {
-      throw _handleFirebaseAuthException(e);
-    } catch (e) {
-      if (e is AuthException) rethrow;
-      throw AuthException('Failed to delete account: ${e.toString()}');
-    }
+    // Hapus data Firestore
+    await _firestore.collection("users").doc(user.uid).delete();
+
+    // Hapus akun Authentication
+    await user.delete();
+
+    return true;
+  } on FirebaseAuthException catch (e) {
+    throw _handleFirebaseAuthException(e);
+  } catch (e) {
+    if (e is AuthException) rethrow;
+    throw AuthException('Failed to delete account: ${e.toString()}');
   }
+}
 
   AuthException _handleFirebaseAuthException(FirebaseAuthException e) {
     switch (e.code) {

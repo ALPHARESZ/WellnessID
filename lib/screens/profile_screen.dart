@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 import '../widgets/navigation_bar.dart';
 import '../widgets/card_list.dart';
@@ -25,6 +27,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _diagnosisHistory.removeAt(index);
     });
   }
+
+  Future<String?> _getUserName() async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return null;
+
+  final doc = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .get();
+
+  return doc.data()?['name'];
+}
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +92,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 10),
 
-            Text(
-              '${user!.email}',
-              style: TextStyle(
-                fontSize: 26,
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w600,
-              ),
+            FutureBuilder<String?>(
+              future: _getUserName(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text(
+                    "Loading...",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  );
+                }
+
+                final name = snapshot.data;
+                return Text(
+                  name == null || name.isEmpty ? "Pengguna" : name,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 20),
