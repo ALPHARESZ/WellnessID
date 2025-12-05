@@ -43,8 +43,7 @@ class DiagnoseResultPage extends StatelessWidget {
                         title: r.disease.name,
                         subtitle: "Kecocokan: $percent%",
                         onTap: () {
-                          // kirim Disease + score + selectedSymptomIds ke detail
-                          context.go('/disease-detail', extra: {
+                          context.push('/disease-detail', extra: {
                             'disease': r.disease,
                             'score': r.score,
                             'selectedSymptomIds': selectedSymptomIds,

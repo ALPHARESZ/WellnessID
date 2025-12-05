@@ -114,8 +114,20 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/disease-detail',
       builder: (context, state) {
-        final id = state.extra as String;
-        return DiseaseDetailScreen(diseaseId: id);
+        final extra = state.extra;
+
+        if (extra is String) {
+          return DiseaseDetailScreen(diseaseId: extra);
+        }
+
+        if (extra is Map) {
+          final disease = extra['disease'];
+          return DiseaseDetailScreen(diseaseId: disease.id);
+        }
+
+        return const Scaffold(
+          body: Center(child: Text("Invalid route parameter")),
+        );
       },
     ),
     GoRoute(
