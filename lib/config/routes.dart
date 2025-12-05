@@ -24,6 +24,7 @@ import '../screens/input_box_screen.dart';
 import '../screens/change_profile_screen.dart';
 import '../screens/change_password_screen.dart';
 import '../screens/delete_account_screen.dart';
+import '../screens/chat_screen.dart';
 
 
 final GoRouter appRouter = GoRouter(
@@ -173,6 +174,11 @@ final GoRouter appRouter = GoRouter(
       name: 'delete-account,',
       builder: (context, state) => const DeleteAccount(),
     ),
+    GoRoute(
+      path: '/chat',
+      builder: (context, state) => const ChatScreen(),
+),
+
   ],
   errorBuilder: (context, state) => Scaffold(
     body: Center(child: Text('Halaman tidak ditemukan: ${state.error}')),
