@@ -13,20 +13,20 @@ class MedicinesService {
   }
 
   /// 🔍 Cari obat berdasarkan nama (menggunakan Firestore query, bukan fetch semua)
-  Future<List<Medicines>> searchMedicines(String query) async {
-  final trimmedQuery = query.trim().toLowerCase(); // ubah keyword jadi lowercase
-  if (trimmedQuery.isEmpty) return [];
+Future<List<Medicines>> searchMedicines(String query) async {
+  final lowerQuery = query.trim().toLowerCase();
 
-  final snapshot = await _db
-      .collection('medicines')
-      .where('name_lower', isGreaterThanOrEqualTo: trimmedQuery)
-      .where('name_lower', isLessThan: trimmedQuery + '\uf8ff')
-      .get();
+  if (lowerQuery.isEmpty) return [];
+
+  // Ambil semua obat (karena Firestore tidak punya native case-insensitive query)
+  final snapshot = await _db.collection('medicines').get();
 
   return snapshot.docs
       .map((doc) => Medicines.fromFirestore(doc.id, doc.data()))
+      .where((med) => med.name.toLowerCase().contains(lowerQuery))
       .toList();
 }
+
 
 
 
