@@ -16,7 +16,6 @@ import '../screens/disease_detail_screen.dart';
 import '../screens/search_disease_screen.dart';
 import '../screens/disease_result_screen.dart';
 import '../screens/medicine_screen.dart';
-import '../screens/search_medicine_screen.dart';
 import '../screens/medicine_result_screen.dart';
 import '../screens/medicine_detail_screen.dart';
 import '../screens/saved_medicine_screen.dart';
@@ -123,11 +122,6 @@ final GoRouter appRouter = GoRouter(
       path: '/medicine',
       name: 'medicine',
       builder: (context, state) => const MedicineScreen(),
-    ),
-    GoRoute(
-      path: '/search-medicine',
-      name: 'search_medicine',
-      builder: (context, state) => const SearchMedicineScreen(),
     ),
     GoRoute(
       path: '/medicine-result',

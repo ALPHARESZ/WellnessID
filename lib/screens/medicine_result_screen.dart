@@ -18,40 +18,50 @@ class _MedicineResultScreenState extends State<MedicineResultScreen> {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  List<Map<String, dynamic>> medicines = [];
   List<Map<String, dynamic>> filteredMedicines = [];
   Set<String> savedIds = {};
-  bool loading = true;
+  bool loading = false;
+  String lastQuery = ""; // 🟢 simpan keyword terakhir
 
-  @override
-  void initState() {
-    super.initState();
-    _loadMedicines();
-  }
+  /// 🔍 Fungsi pencarian case-insensitive langsung ke Firestore
+  Future<void> _searchMedicine(String query) async {
+    final lowerQuery = query.trim().toLowerCase();
 
-  /// 🔹 Ambil semua obat dari Firestore
-  Future<void> _loadMedicines() async {
-    final snapshot = await _db.collection('medicines').get();
-    final data =
-        snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+    // Jika input kosong → kosongkan hasil
+    if (lowerQuery.isEmpty) {
+      setState(() {
+        filteredMedicines = [];
+        lastQuery = "";
+      });
+      return;
+    }
+
+    // Hindari query berulang untuk input sama
+    if (lowerQuery == lastQuery) return;
 
     setState(() {
-      medicines = data;
-      filteredMedicines = data;
-      loading = false;
+      loading = true;
+      lastQuery = lowerQuery;
     });
-  }
 
-  /// 🔹 Fungsi pencarian berdasarkan nama obat
-  void _searchMedicine(String query) {
-    final lower = query.toLowerCase();
-
-    setState(() {
-      filteredMedicines = medicines.where((m) {
+    try {
+      // Ambil obat dari Firestore dan filter berdasarkan nama
+      final snapshot = await _db.collection('medicines').get();
+      final results = snapshot.docs.map((doc) {
+        return {'id': doc.id, ...doc.data()};
+      }).where((m) {
         final name = (m['name'] ?? '').toString().toLowerCase();
-        return name.contains(lower);
+        return name.contains(lowerQuery);
       }).toList();
-    });
+
+      setState(() {
+        filteredMedicines = results;
+        loading = false;
+      });
+    } catch (e) {
+      debugPrint("Error searching medicines: $e");
+      setState(() => loading = false);
+    }
   }
 
   /// 💾 Simpan obat ke koleksi user
@@ -108,7 +118,6 @@ class _MedicineResultScreenState extends State<MedicineResultScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56),
         child: PageHeader(
@@ -116,80 +125,94 @@ class _MedicineResultScreenState extends State<MedicineResultScreen> {
           onBack: () => Navigator.pop(context),
         ),
       ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
 
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
+            /// 🔍 Search bar (langsung trigger Firestore search)
+            SearchBarWidget(
+              hint: "Cari Info Obat di sini",
+              icon: Icons.search,
+              onChanged: _searchMedicine, // realtime
+              onSubmitted: _searchMedicine, // tekan enter
+            ),
 
-                  /// 🔍 Search bar
-                  SearchBarWidget(
-                    hint: "Cari Info Obat di sini",
-                    icon: Icons.search,
-                    onChanged: _searchMedicine,
-                  ),
+            const SizedBox(height: 20),
 
-                  const SizedBox(height: 20),
-
-                  Expanded(
-                    child: filteredMedicines.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "Tidak ada obat ditemukan.",
-                              style: TextStyle(
-                                fontFamily: "Poppins",
-                                fontSize: 18,
-                                color: Colors.grey,
+            Expanded(
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : filteredMedicines.isEmpty && lastQuery.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.search, size: 100, color: Colors.grey),
+                              SizedBox(height: 10),
+                              Text(
+                                "Silahkan cari informasi obat",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontFamily: "Poppins",
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredMedicines.length,
-                            itemBuilder: (context, index) {
-                              final item = filteredMedicines[index];
-                              final isSaved = savedIds.contains(item['id']);
+                            ],
+                          ),
+                        )
+                      : filteredMedicines.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "Tidak ada obat ditemukan.",
+                                style: TextStyle(
+                                  fontFamily: "Poppins",
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filteredMedicines.length,
+                              itemBuilder: (context, index) {
+                                final item = filteredMedicines[index];
+                                final isSaved = savedIds.contains(item['id']);
 
-                              return StatefulBuilder(
-                                builder: (context, setState) {
-                                  return CardList(
-                                    title: item["name"] ?? "Tanpa Nama",
-                                    subtitle:
-                                        "Deskripsi: ${item["description"] ?? '-'}",
-                                    trailing: GestureDetector(
-                                      onTap: () => _saveMedicine(item),
-                                      child: Container(
-                                        key: ValueKey(isSaved),
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: isSaved
-                                              ? Colors.green
-                                              : const Color(0xFF22B3E3),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          isSaved ? Icons.check : Icons.add,
-                                          size: 22,
-                                          color: Colors.white,
-                                        ),
+                                return CardList(
+                                  title: item["name"] ?? "Tanpa Nama",
+                                  subtitle:
+                                      "Deskripsi: ${item["description"] ?? '-'}",
+                                  trailing: GestureDetector(
+                                    onTap: () => _saveMedicine(item),
+                                    child: Container(
+                                      key: ValueKey(isSaved),
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: isSaved
+                                            ? Colors.green
+                                            : const Color(0xFF22B3E3),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        isSaved ? Icons.check : Icons.add,
+                                        size: 22,
+                                        color: Colors.white,
                                       ),
                                     ),
-                                    onTap: () {
-                                      context.push('/medicine-detail',
-                                          extra: item);
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
+                                  ),
+                                  onTap: () {
+                                    context.push('/medicine-detail',
+                                        extra: item);
+                                  },
+                                );
+                              },
+                            ),
             ),
+          ],
+        ),
+      ),
     );
   }
 }

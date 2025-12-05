@@ -59,7 +59,7 @@ class MedicineScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: GestureDetector(
-                onTap: () => context.push('/search-medicine'),
+                onTap: () => context.push('/medicine-result'),
                 child: Container(
                   height: 135,
                   decoration: BoxDecoration(
