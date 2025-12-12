@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
-
+import '../providers/auth_provider.dart';
 import '../widgets/navigation_bar.dart';
 import '../widgets/card_list.dart';
 import '../widgets/confirmation_popup.dart';
@@ -16,29 +15,22 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final user = FirebaseAuth.instance.currentUser;
+
   final List<Map<String, String>> _diagnosisHistory = [
     {"title": "Hasil Diagnosa 1", "subtitle": "Tanggal Diagnosa: 10 - 10 - 2025"},
     {"title": "Hasil Diagnosa 2", "subtitle": "Tanggal Diagnosa: 14 - 10 - 2025"},
   ];
+
+  Future<String?> _getUserName() async {
+    final authProvider = context.read<AuthProvider>();
+    return await authProvider.getUserName();
+  }
 
   void _deleteItem(int index) {
     setState(() {
       _diagnosisHistory.removeAt(index);
     });
   }
-
-  Future<String?> _getUserName() async {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
-  if (uid == null) return null;
-
-  final doc = await FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .get();
-
-  return doc.data()?['name'];
-}
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.settings, color: Colors.white, size: 28),
                       onPressed: () {
-                        context.push('/setting');
+                        context.go('/setting');
                       },
                     ),
                   ),

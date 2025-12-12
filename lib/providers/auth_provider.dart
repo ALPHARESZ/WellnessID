@@ -18,6 +18,21 @@ class AuthProvider with ChangeNotifier {
     _initAuthListener();
   }
 
+  Future<String?> getUserId() async {
+    if (_user == null) return null;
+    return await _authService.getUserIdFromFirestore(_user!.uid);
+  }
+
+  Future<String?> getUserName() async {
+    if (_user == null) return null;
+    return await _authService.getUserNameFromFirestore(_user!.uid);
+  }
+
+  Future<String?> getUserEmail() async {
+    if (_user == null) return null;
+    return await _authService.getUserEmailFromFirestore(_user!.uid);
+  }
+
   void _initAuthListener() {
     _authService.authStateChanges.listen((User? user) {
       _user = user;
@@ -55,6 +70,11 @@ class AuthProvider with ChangeNotifier {
   Future<void> _refreshUser() async {
     _user = _authService.currentUser;
     notifyListeners();
+  }
+
+  Future<bool> checkUser() async {
+    await _refreshUser();
+    return _user != null;
   }
 
   void _setLoading(bool value) {

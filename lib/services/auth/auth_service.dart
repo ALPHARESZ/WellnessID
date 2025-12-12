@@ -138,6 +138,21 @@ class AuthService {
     return user;
   }
 
+  Future<String?> getUserIdFromFirestore(String uid) async {
+    final doc = await _firestore.collection("users").doc(uid).get();
+    return doc.data()?["uid"];
+  }
+
+  Future<String?> getUserNameFromFirestore(String uid) async {
+    final doc = await _firestore.collection("users").doc(uid).get();
+    return doc.data()?["name"];
+  }
+
+  Future<String?> getUserEmailFromFirestore(String uid) async {
+    final doc = await _firestore.collection("users").doc(uid).get();
+    return doc.data()?["email"];
+  }
+
   Future<void> _updateUserProfile(
     Future<void> Function() updateFn,
     String fieldName,
