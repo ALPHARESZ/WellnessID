@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/page_header.dart';
+import '../providers/diagnose_provider.dart';
 
 class IdentityScreen extends StatefulWidget {
   const IdentityScreen({super.key});
@@ -123,6 +125,15 @@ class _IdentityScreenState extends State<IdentityScreen> {
               Center(
                 child: GestureDetector(
                   onTap: () {
+                    final p = context.read<DiagnosisProvider>();
+                    p.setIdentity(
+                      userAge: int.parse(umurC.text),
+                      userGender: gender,
+                      userHeight: double.parse(tinggiC.text),
+                      userWeight: double.parse(beratC.text),
+                      userAllergies: alergi,
+                    );
+
                     context.push('/symptoms');
                   },
                   child: Container(

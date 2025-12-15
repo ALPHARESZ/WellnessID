@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../providers/auth_provider.dart';
 import '../widgets/navigation_bar.dart';
 import '../widgets/card_list.dart';
 import '../widgets/confirmation_popup.dart';
+import '../services/diagnose_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,21 +16,18 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
-  final List<Map<String, String>> _diagnosisHistory = [
-    {"title": "Hasil Diagnosa 1", "subtitle": "Tanggal Diagnosa: 10 - 10 - 2025"},
-    {"title": "Hasil Diagnosa 2", "subtitle": "Tanggal Diagnosa: 14 - 10 - 2025"},
-  ];
+  final user = FirebaseAuth.instance.currentUser;
 
   Future<String?> _getUserName() async {
-    final authProvider = context.read<AuthProvider>();
-    return await authProvider.getUserName();
-  }
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
 
-  void _deleteItem(int index) {
-    setState(() {
-      _diagnosisHistory.removeAt(index);
-    });
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    return doc.data()?['name'];
   }
 
   @override
@@ -40,6 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // ================= HEADER =================
             Container(
               width: double.infinity,
               height: 220,
@@ -53,7 +52,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     right: 20,
                     top: 20,
                     child: IconButton(
-                      icon: const Icon(Icons.settings, color: Colors.white, size: 28),
+                      icon: const Icon(
+                        Icons.settings,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                       onPressed: () {
                         context.go('/setting');
                       },
@@ -84,6 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 10),
 
+            // ================= USER NAME =================
             FutureBuilder<String?>(
               future: _getUserName(),
               builder: (context, snapshot) {
@@ -112,61 +116,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 20),
 
+            // ================= DIAGNOSIS HISTORY =================
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: List.generate(_diagnosisHistory.length, (index) {
-                    final item = _diagnosisHistory[index];
+              child: StreamBuilder<QuerySnapshot>(
+                stream: DiagnosisService().diagnosisStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
 
-                    return CardList(
-                      title: item["title"]!,
-                      subtitle: item["subtitle"]!,
-                      trailing: GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            barrierColor: Colors.black.withOpacity(0.3),
-                            builder: (context) {
-                              return ConfirmationPopup(
-                                title: "Hapus Riwayat?",
-                                onConfirm: () {
-                                  Navigator.pop(context);
-                                  _deleteItem(index);
-                                },
-                                onCancel: () {
-                                  Navigator.pop(context);
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Belum ada riwayat diagnosa",
+                        style: TextStyle(
+                          fontFamily: "Poppins",
+                          fontSize: 16,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: List.generate(docs.length, (index) {
+                        final doc = docs[index];
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        // ==== SAFE TIMESTAMP PARSING ====
+                        DateTime date = DateTime.now();
+                        if (data['createdAt'] is Timestamp) {
+                          date =
+                              (data['createdAt'] as Timestamp).toDate();
+                        }
+
+                        final formattedDate =
+                            "${date.day}-${date.month}-${date.year}";
+
+                        return CardList(
+                          title: "Hasil Diagnosa ${index + 1}",
+                          subtitle:
+                              "Tanggal Diagnosa: $formattedDate",
+
+                          trailing: GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                barrierColor:
+                                    Colors.black.withOpacity(0.3),
+                                builder: (context) {
+                                  return ConfirmationPopup(
+                                    title: "Hapus Riwayat?",
+                                    onConfirm: () async {
+                                      Navigator.pop(context);
+                                      await doc.reference.delete();
+                                    },
+                                    onCancel: () {
+                                      Navigator.pop(context);
+                                    },
+                                  );
                                 },
                               );
                             },
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                              child: const Icon(
+                                Icons.delete,
+                                size: 22,
+                                color: Colors.red,
+                              ),
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.delete,
-                            size: 22,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        context.push('/diagnose-detail');
-                      },
-                    );
-                  }),
-                ),
+
+                          onTap: () {
+                            context.push(
+                              '/diagnose-detail',
+                              extra: {
+                                "diagnosisId": doc.id,
+                                "data": data,
+                              },
+                            );
+                          },
+                        );
+                      }),
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: const AppNavigationBar(currentIndex: 3),
+
+      bottomNavigationBar:
+          const AppNavigationBar(currentIndex: 3),
     );
   }
 }

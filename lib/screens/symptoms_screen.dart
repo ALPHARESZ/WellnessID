@@ -2,11 +2,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/page_header.dart';
 import '../widgets/search.dart';
 import '../services/expert_system_service.dart';
 import '../models/symptom.dart';
+import '../providers/diagnose_provider.dart';
 
 class SymptomsPage extends StatefulWidget {
   const SymptomsPage({super.key});
@@ -93,7 +95,12 @@ class _SymptomsPageState extends State<SymptomsPage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: selected.isEmpty ? null : () => context.push('/result', extra: selected.toList()),
+                      onPressed: selected.isEmpty 
+                      ? null 
+                      : () {
+                        context.read<DiagnosisProvider>().setSymptoms(selected.toList());
+                        context.push('/result', extra: selected.toList());
+                      },
                       child: const Text('Lihat Hasil Diagnosa', style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: 1.0, color: Colors.white)),
                     ),
                   ),
