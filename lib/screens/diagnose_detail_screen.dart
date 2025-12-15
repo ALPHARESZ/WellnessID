@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../widgets/page_header.dart';
+import '../services/diagnose_service.dart';
 
 class DiagnoseDetailScreen extends StatelessWidget {
   const DiagnoseDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final extra =
+        GoRouterState.of(context).extra as Map<String, dynamic>;
+    final String diagnosisId = extra['diagnosisId'];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
 
@@ -18,87 +24,142 @@ class DiagnoseDetailScreen extends StatelessWidget {
         ),
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: DiagnosisService().getDiagnosisDetail(diagnosisId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-            _buildCard(
-              title: "Data Pasien",
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _bullet("Umur: 1000 tahun kalau tak sembahyang apa gunanya"),
-                  _bullet("Jenis Kelamin: Laki-Laki (Bukan Transgender dan Suka Perempuan)"),
-                  _bullet("Berat Badan: > 1 gram"),
-                  _bullet("Tinggi Badan: < 1 kilometer"),
-                  const SizedBox(height: 10),
-                  RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Alergi Obat: ",
-                          style: TextStyle(
-                            fontFamily: "Poppins",
-                            fontSize: 15,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                          ),
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const Center(
+              child: Text(
+                "Data diagnosa tidak ditemukan",
+                style: TextStyle(fontFamily: "Poppins"),
+              ),
+            );
+          }
+
+          final data = snapshot.data!;
+
+          final age = data['age'];
+          final height = data['height'];
+          final weight = data['weight'];
+          final gender = data['gender'];
+          final allergies = data['allergies'];
+
+          final List symptoms = data['symptoms'] ?? [];
+          final List diseases = data['diseases'] ?? [];
+
+          return SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // ================= DATA PASIEN =================
+                _buildCard(
+                  title: "Data Pasien",
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _bullet("Umur: $age tahun"),
+                      _bullet("Jenis Kelamin: $gender"),
+                      _bullet("Berat Badan: $weight Kg"),
+                      _bullet("Tinggi Badan: $height cm"),
+                      const SizedBox(height: 10),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: "Alergi Obat: ",
+                              style: TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 15,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            TextSpan(
+                              text: allergies,
+                              style: const TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 15,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
-                        TextSpan(
-                          text: "Sepertinya tidak",
-                          style: TextStyle(
-                            fontFamily: "Poppins",
-                            fontSize: 15,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ================= GEJALA =================
+                _buildCard(
+                  title: "Gejala",
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: symptoms
+                        .map<Widget>(
+                          (s) => _bullet(s.toString()),
+                        )
+                        .toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ================= HASIL PREDIKSI =================
+                _buildCard(
+                  title: "Hasil Prediksi Penyakit",
+                  content: Column(
+                    children: diseases.asMap().entries.map<Widget>((e) {
+                      final d = e.value;
+                      final double score =
+                          (d['score'] ?? 0).toDouble();
+                      final int percent =
+                          (score * 100).round();
+
+                      String strength;
+                      if (percent >= 80) {
+                        strength = "Sangat Kuat";
+                      } else if (percent >= 60) {
+                        strength = "Kuat";
+                      } else if (percent >= 40) {
+                        strength = "Sedang";
+                      } else {
+                        strength = "Lemah";
+                      }
+
+                      return _predictionRow(
+                        "${e.key + 1}. ${d['name']}",
+                        strength,
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+              ],
             ),
-
-            const SizedBox(height: 16),
-
-            _buildCard(
-              title: "Gejala",
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _bullet("Gatal-gatal di sekitar dubur"),
-                  _bullet("Tenggorakan kering"),
-                  _bullet("Susah menelan"),
-                  _bullet("Sakit hati"),
-                  _bullet("Pening di pinggang"),
-                  _bullet("Tangan Encok"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildCard(
-              title: "Hasil Prediksi Penyakit",
-              content: Column(
-                children: [
-                  _predictionRow("Penyakit 1", "Sangat Kuat"),
-                  _predictionRow("Penyakit 2", "Sangat Kuat Lemah"),
-                  _predictionRow("Penyakit 3", "Sangat Lemah"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCard({required String title, required Widget content}) {
+  // ================= CARD =================
+  Widget _buildCard({
+    required String title,
+    required Widget content,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
@@ -124,24 +185,31 @@ class DiagnoseDetailScreen extends StatelessWidget {
               fontSize: 16,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           content,
         ],
       ),
     );
   }
 
+  // ================= BULLET =================
   Widget _bullet(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("• ",
-              style: TextStyle(fontSize: 15, fontFamily: "Poppins")),
+          const Text(
+            "• ",
+            style: TextStyle(
+              fontSize: 15,
+              fontFamily: "Poppins",
+            ),
+          ),
           Expanded(
             child: Text(
               text,
+              softWrap: true,
               style: const TextStyle(
                 fontSize: 14,
                 fontFamily: "Poppins",
@@ -154,24 +222,35 @@ class DiagnoseDetailScreen extends StatelessWidget {
     );
   }
 
+  // ================= PREDICTION ROW =================
   Widget _predictionRow(String disease, String strength) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            disease,
-            style: const TextStyle(
-              fontSize: 15,
-              fontFamily: "Poppins",
+          Expanded(
+            flex: 3,
+            child: Text(
+              disease,
+              softWrap: true,
+              style: const TextStyle(
+                fontSize: 15,
+                fontFamily: "Poppins",
+              ),
             ),
           ),
-          Text(
-            strength,
-            style: const TextStyle(
-              fontSize: 15,
-              fontFamily: "Poppins",
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: Text(
+              strength,
+              textAlign: TextAlign.right,
+              softWrap: true,
+              style: const TextStyle(
+                fontSize: 15,
+                fontFamily: "Poppins",
+              ),
             ),
           ),
         ],
