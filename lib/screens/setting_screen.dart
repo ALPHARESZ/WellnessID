@@ -15,22 +15,18 @@ class SettingScreen extends StatefulWidget {
 class _SettingScreenState extends State<SettingScreen> {
   bool expandAkun = false;
 
-    Future<void> _logOut() async {
-    // Call AuthProvider
+  Future<void> _logOut() async {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.logOut();
 
-    // Handle result
     if (success) {
-      if (mounted) {
-        SnackbarHelper.showSuccess(context, 'Berhasil Keluar!');
-        context.go('/login');
-      }
+      if (!mounted) return;
+      SnackbarHelper.showSuccess(context, 'Berhasil Keluar!');
+      context.go('/login');
     } else {
-      if (mounted) {
-        final errorMessage = authProvider.errorMessage ?? 'Gagal Keluar';
-        SnackbarHelper.showError(context, errorMessage);
-      }
+      if (!mounted) return;
+      final errorMessage = authProvider.errorMessage ?? 'Gagal Keluar';
+      SnackbarHelper.showError(context, errorMessage);
     }
   }
 
@@ -55,9 +51,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -74,7 +68,6 @@ class _SettingScreenState extends State<SettingScreen> {
                       ),
                       child: const Text("Tidak"),
                     ),
-
                     ElevatedButton(
                       onPressed: _logOut,
                       style: ElevatedButton.styleFrom(
@@ -113,72 +106,96 @@ class _SettingScreenState extends State<SettingScreen> {
         centerTitle: true,
       ),
 
-      body: Column(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.mail_outline),
-            title: const Text("Kotak Masukan"),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push("/input-box"),
-          ),
-
-          ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: const Text("Pengaturan Akun"),
-            trailing: Icon(
-              expandAkun ? Icons.expand_less : Icons.expand_more,
-            ),
-            onTap: () {
-              setState(() {
-                expandAkun = !expandAkun;
-              });
-            },
-          ),
-
-          if (expandAkun) ...[
-            Padding(
-              padding: const EdgeInsets.only(left: 60),
-              child: ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text("Ubah Profil"),
-                onTap: () => context.push("/change-profile"),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.only(left: 60),
-              child: ListTile(
-                leading: const Icon(Icons.key),
-                title: const Text("Ubah Kata Sandi"),
-                onTap: () => context.push("/change-password"),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.only(left: 60),
-              child: ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text(
-                  "Keluar",
-                  style: TextStyle(color: Colors.red),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 600, // responsif tablet & desktop
+                  minHeight: constraints.maxHeight,
                 ),
-                onTap: _showLogoutDialog,
-              ),
-            ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.mail_outline),
+                      title: const Text("Kotak Masukan"),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push("/input-box"),
+                    ),
 
-            Padding(
-              padding: const EdgeInsets.only(left: 60),
-              child: ListTile(
-                leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text(
-                  "Hapus Akun",
-                  style: TextStyle(color: Colors.red),
+                    ListTile(
+                      leading: const Icon(Icons.person_outline),
+                      title: const Text("Pengaturan Akun"),
+                      trailing: Icon(
+                        expandAkun
+                            ? Icons.expand_less
+                            : Icons.expand_more,
+                      ),
+                      onTap: () {
+                        setState(() {
+                          expandAkun = !expandAkun;
+                        });
+                      },
+                    ),
+
+                    if (expandAkun) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 60),
+                        child: ListTile(
+                          leading: const Icon(Icons.person),
+                          title: const Text("Ubah Profil"),
+                          onTap: () => context.push("/change-profile"),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(left: 60),
+                        child: ListTile(
+                          leading: const Icon(Icons.key),
+                          title: const Text("Ubah Kata Sandi"),
+                          onTap: () =>
+                              context.push("/change-password"),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(left: 60),
+                        child: ListTile(
+                          leading: const Icon(Icons.logout,
+                              color: Colors.red),
+                          title: const Text(
+                            "Keluar",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          onTap: _showLogoutDialog,
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(left: 60),
+                        child: ListTile(
+                          leading: const Icon(Icons.delete_forever,
+                              color: Colors.red),
+                          title: const Text(
+                            "Hapus Akun",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          onTap: () =>
+                              context.push("/delete-account"),
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                onTap: () => context.push("/delete-account"),
               ),
             ),
-          ]
-        ],
+          );
+        },
       ),
     );
   }

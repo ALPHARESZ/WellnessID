@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../utils/snackbar_helper.dart';
 
 class InputBoxScreen extends StatefulWidget {
   const InputBoxScreen({super.key});
@@ -10,6 +14,51 @@ class InputBoxScreen extends StatefulWidget {
 
 class _InputBoxScreenState extends State<InputBoxScreen> {
   final TextEditingController messageController = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> sendMessage() async {
+    final message = messageController.text.trim();
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (message.isEmpty) {
+      SnackbarHelper.showError(context, 'Pesan tidak boleh kosong');
+      return;
+    }
+
+    if (user == null) {
+      SnackbarHelper.showError(context, 'Silakan login terlebih dahulu');
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('messages')
+          .add({
+        'description': message,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      messageController.clear();
+      SnackbarHelper.showSuccess(context, 'Masukan berhasil dikirim!');
+    } catch (e) {
+      SnackbarHelper.showError(context, 'Gagal mengirim pesan. Silakan coba lagi.');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void showMessage(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,18 +108,18 @@ class _InputBoxScreenState extends State<InputBoxScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  debugPrint("Pesan: ${messageController.text}");
-                },
+                onPressed: isLoading ? null : sendMessage,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,       
-                  foregroundColor: Colors.white,       
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text("Kirim Masukan"),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("Kirim Masukan"),
               ),
             ),
           ],
