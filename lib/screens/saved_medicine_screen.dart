@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 🟢 Tambahkan import ini
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../widgets/search.dart';
 import '../widgets/page_header.dart';
@@ -34,7 +34,6 @@ class _SavedMedicineScreenState extends State<SavedMedicineScreen> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      // Jika belum login, beri peringatan
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Silakan login terlebih dahulu."),
@@ -85,103 +84,119 @@ class _SavedMedicineScreenState extends State<SavedMedicineScreen> {
       return m.name.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final bool isWideScreen = screenWidth > 600;
 
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
-        child: PageHeader(
-          title: "Daftar Obat Tersimpan",
-          onBack: () => Navigator.pop(context),
-        ),
-      ),
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FE),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(56),
+            child: PageHeader(
+              title: "Daftar Obat Tersimpan",
+              onBack: () => Navigator.pop(context),
+            ),
+          ),
+          body: SafeArea(
+            child: loading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1000),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10),
 
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-
-                  // 🔍 Search bar
-                  SearchBarWidget(
-                    hint: "Cari Obat Tersimpan di sini",
-                    icon: Icons.search,
-                    onChanged: (value) {
-                      setState(() {
-                        searchQuery = value;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Expanded(
-                    child: filteredList.isEmpty
-                        ? Center(
-                            child: Text(
-                              "Tidak ada obat tersimpan",
-                              style: TextStyle(
-                                fontFamily: "Poppins",
-                                fontSize: 18,
-                                color: Colors.grey.shade500,
-                              ),
+                            /// 🔍 Search bar
+                            SearchBarWidget(
+                              hint: "Cari Obat Tersimpan di sini",
+                              icon: Icons.search,
+                              onChanged: (value) {
+                                setState(() {
+                                  searchQuery = value;
+                                });
+                              },
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredList.length,
-                            itemBuilder: (context, index) {
-                              final item = filteredList[index];
 
-                              return CardList(
-                                title: item.name,
-                                subtitle: "Deskripsi: ${item.description}",
-                                trailing: GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      barrierDismissible: false,
-                                      barrierColor:
-                                          Colors.black.withOpacity(0.3),
-                                      builder: (context) {
-                                        return ConfirmationPopup(
-                                          title: "Hapus Obat?",
-                                          onConfirm: () {
-                                            Navigator.pop(context);
-                                            _deleteMedicine(item);
-                                          },
-                                          onCancel: () {
-                                            Navigator.pop(context);
-                                          },
-                                        );
-                                      },
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.delete,
-                                      size: 22,
-                                      color: Colors.red,
+                            const SizedBox(height: 20),
+
+                            /// 🔄 Daftar Obat
+                            if (filteredList.isEmpty)
+                              SizedBox(
+                                height: MediaQuery.of(context).size.height * 0.5,
+                                child: Center(
+                                  child: Text(
+                                    "Tidak ada obat tersimpan",
+                                    style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      fontSize: 18,
+                                      color: Colors.grey.shade500,
                                     ),
                                   ),
                                 ),
-                                onTap: () {
-                                  context.push('/medicine-detail', extra: item);
+                              )
+                            else
+                              ListView.builder(
+                                itemCount: filteredList.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final item = filteredList[index];
+                                  return CardList(
+                                    title: item.name,
+                                    subtitle: "Deskripsi: ${item.description}",
+                                    trailing: GestureDetector(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          barrierColor: Colors.black.withOpacity(0.3),
+                                          builder: (context) {
+                                            return ConfirmationPopup(
+                                              title: "Hapus Obat?",
+                                              onConfirm: () {
+                                                Navigator.pop(context);
+                                                _deleteMedicine(item);
+                                              },
+                                              onCancel: () {
+                                                Navigator.pop(context);
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.delete,
+                                          size: isWideScreen ? 26 : 22,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      context.push('/medicine-detail', extra: item);
+                                    },
+                                  );
                                 },
-                              );
-                            },
-                          ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ],
-              ),
-            ),
+          ),
+        );
+      },
     );
   }
 }
+ 

@@ -14,8 +14,22 @@ class CardList extends StatelessWidget {
     this.trailing,
   });
 
+  // Fungsi untuk memotong teks deskripsi agar tidak terlalu panjang
+  String _truncateText(String text, {int maxLength = 65}) {
+    if (text.length <= maxLength) return text;
+    return "${text.substring(0, maxLength)}...";
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Pisahkan teks berdasarkan tanda ":" jika ada
+    final parts = subtitle.split(":");
+    final label = parts.isNotEmpty ? parts.first : "";
+    final value = parts.length > 1 ? parts.sublist(1).join(":").trim() : subtitle;
+
+    // Terapkan pemotongan teks pada bagian deskripsi/value
+    final truncatedValue = _truncateText(value);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -33,8 +47,9 @@ class CardList extends StatelessWidget {
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center, // posisi vertikal tengah
           children: [
+            // Bagian teks di sisi kiri
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +67,7 @@ class CardList extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "${subtitle.split(":").first}: ",
+                          text: label.isNotEmpty ? "$label: " : "",
                           style: const TextStyle(
                             fontFamily: "Poppins",
                             fontSize: 15,
@@ -60,7 +75,7 @@ class CardList extends StatelessWidget {
                           ),
                         ),
                         TextSpan(
-                          text: subtitle.split(":").last,
+                          text: truncatedValue,
                           style: const TextStyle(
                             fontFamily: "Poppins",
                             fontSize: 15,
@@ -74,7 +89,12 @@ class CardList extends StatelessWidget {
               ),
             ),
 
-            if (trailing != null) trailing!,
+            // Tombol di sisi kanan tengah
+            if (trailing != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: trailing!,
+              ),
           ],
         ),
       ),
