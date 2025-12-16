@@ -45,24 +45,21 @@ class _InputBoxScreenState extends State<InputBoxScreen> {
       messageController.clear();
       SnackbarHelper.showSuccess(context, 'Masukan berhasil dikirim!');
     } catch (e) {
-      SnackbarHelper.showError(context, 'Gagal mengirim pesan. Silakan coba lagi.');
+      SnackbarHelper.showError(
+          context, 'Gagal mengirim pesan. Silakan coba lagi.');
     } finally {
       setState(() => isLoading = false);
     }
   }
 
-  void showMessage(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(text),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -75,55 +72,78 @@ class _InputBoxScreenState extends State<InputBoxScreen> {
         centerTitle: true,
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Jika ingin menghubungi kami atau memiliki kritik dan saran silakan isi kolom di bawah ini",
-              style: TextStyle(fontSize: 15),
-            ),
-
-            const SizedBox(height: 20),
-
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 700, // 🔥 aman untuk tablet / web / desktop
               ),
-              child: TextField(
-                controller: messageController,
-                maxLines: 10,
-                decoration: const InputDecoration(
-                  hintText: "Tulis pesan Anda di sini...",
-                  border: InputBorder.none,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 20,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Jika ingin menghubungi kami atau memiliki kritik dan saran silakan isi kolom di bawah ini",
+                      style: TextStyle(fontSize: 15),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TextField(
+                        controller: messageController,
+                        maxLines: isLandscape ? 6 : 10, // 🔥 adaptif
+                        decoration: const InputDecoration(
+                          hintText: "Tulis pesan Anda di sini...",
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : sendMessage,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text("Kirim Masukan"),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-
-            const Spacer(),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : sendMessage,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Kirim Masukan"),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
