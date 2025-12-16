@@ -30,19 +30,39 @@ class AppNavigationBar extends StatelessWidget {
       },
       items: [
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/Logo.jpg', width: 24),
+          icon: Image.asset(
+            currentIndex == 0
+                ? 'assets/images/SelectedHome.png'
+                : 'assets/images/UnselectedHome.png',
+            width: 32,
+          ),
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/Logo.jpg', width: 24),
+          icon: Image.asset(
+            currentIndex == 1
+                ? 'assets/images/SelectedMedicine.png'
+                : 'assets/images/UnselectedMedicine.png',
+            width: 32,
+          ),
           label: 'Medicine',
         ),
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/Logo.jpg', width: 24),
+          icon: Image.asset(
+            currentIndex == 2
+                ? 'assets/images/SelectedChat.png'
+                : 'assets/images/UnselectedChat.png',
+            width: 32,
+          ),
           label: 'Chat',
         ),
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/Logo.jpg', width: 24),
+          icon: Image.asset(
+            currentIndex == 3
+                ? 'assets/images/SelectedProfile.png'
+                : 'assets/images/UnselectedProfile.png',
+            width: 32,
+          ),
           label: 'Akun',
         ),
       ],

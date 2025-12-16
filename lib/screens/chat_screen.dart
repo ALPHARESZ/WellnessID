@@ -15,7 +15,7 @@ class ChatScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.go('/home'), // 🟢 langsung ke Home
+          onPressed: () => context.go('/home'),
         ),
         title: const Text(
           "Chat",
@@ -28,28 +28,43 @@ class ChatScreen extends StatelessWidget {
         centerTitle: true,
       ),
 
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.block,
-              size: 100,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 20),
-            Text(
-              "Fitur ini sedang\ndalam tahap pengembangan",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontFamily: "Poppins",
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 600, // ⬅️ web / tablet friendly
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: SizedBox(
+                  height: constraints.maxHeight * 0.75,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.block,
+                        size: 100,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Fitur ini sedang\ndalam tahap pengembangan",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontFamily: "Poppins",
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
 
       bottomNavigationBar: const AppNavigationBar(currentIndex: 2),

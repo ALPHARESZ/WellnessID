@@ -27,108 +27,128 @@ class DiagnoseResultPage extends StatelessWidget {
           onBack: () => context.pop(),
         ),
       ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 700;
 
-      body: FutureBuilder<List<DiagnosisResult>>(
-        future: expert.diagnose(selectedSymptomIds),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              width: isWide ? 700 : double.infinity,
+              child: FutureBuilder<List<DiagnosisResult>>(
+                future: expert.diagnose(selectedSymptomIds),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text("Terjadi error: ${snapshot.error}"),
-            );
-          }
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text("Terjadi error: ${snapshot.error}"),
+                    );
+                  }
 
-          final results = snapshot.data ?? [];
+                  final results = snapshot.data ?? [];
 
-          if (results.isEmpty) {
-            return const Center(
-              child: Text(
-                "Tidak ditemukan penyakit yang cocok.",
-                style: TextStyle(fontSize: 16),
-              ),
-            );
-          }
+                  if (results.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Tidak ditemukan penyakit yang cocok.",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    );
+                  }
 
-          return Column(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ListView(
+                  return Column(
                     children: [
-                      const SizedBox(height: 10),
-                      ...results.map((r) {
-                        final percent = (r.score * 100).round();
-                        return Column(
-                          children: [
-                            CardList(
-                              title: r.disease.name,
-                              subtitle: "Kecocokan: $percent%",
-                              onTap: () {
-                                context.push('/disease-detail', extra: {
-                                  'disease': r.disease,
-                                  'score': r.score,
-                                  'selectedSymptomIds': selectedSymptomIds,
-                                });
-                              },
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: ListView(
+                            children: [
+                              const SizedBox(height: 10),
+                              ...results.map((r) {
+                                final percent = (r.score * 100).round();
+                                return Column(
+                                  children: [
+                                    CardList(
+                                      title: r.disease.name,
+                                      subtitle:
+                                          "Kecocokan: $percent%",
+                                      onTap: () {
+                                        context.push(
+                                          '/disease-detail',
+                                          extra: {
+                                            'disease': r.disease,
+                                            'score': r.score,
+                                            'selectedSymptomIds':
+                                                selectedSymptomIds,
+                                          },
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        width: double.infinity,
+                        child: SizedBox(
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final provider =
+                                  context.read<DiagnosisProvider>();
+
+                              provider.setDiseases(
+                                results
+                                    .map(
+                                      (r) => {
+                                        "id": r.disease.id,
+                                        "name": r.disease.name,
+                                        "score": r.score,
+                                      },
+                                    )
+                                    .toList(),
+                              );
+
+                              await DiagnosisService().saveDiagnosis(
+                                diagnosisData: provider.toFirestore(),
+                              );
+
+                              provider.resetAll();
+                              context.go('/profile');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color(0xFF22B3E3),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(40),
+                              ),
                             ),
-                            const SizedBox(height: 10),
-                          ],
-                        );
-                      }).toList(),
+                            child: const Text(
+                              "Simpan Diagnosa",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontFamily: "Poppins",
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
-                ),
+                  );
+                },
               ),
-
-              // ---- Tombol Simpan Diagnosa (sekarang aman) ----
-              Container(
-                padding: const EdgeInsets.all(20),
-                width: double.infinity,
-                child: SizedBox(
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final provider = context.read<DiagnosisProvider>();
-
-                      provider.setDiseases(
-                        results.map((r) => {
-                          "id": r.disease.id,
-                          "name": r.disease.name,
-                          "score": r.score,
-                        }).toList(),
-                      );
-
-                      await DiagnosisService().saveDiagnosis(
-                        diagnosisData: provider.toFirestore(),
-                      );
-
-                      provider.resetAll();
-                      context.go('/profile');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF22B3E3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(40),
-                      ),
-                    ),
-
-                    child: const Text(
-                      "Simpan Diagnosa",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontFamily: "Poppins",
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           );
         },
       ),
