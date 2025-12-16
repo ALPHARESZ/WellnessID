@@ -95,16 +95,55 @@ class _RegisterPageState extends State<RegisterPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                "Daftar",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.lightBlue,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/Logo.jpg',   
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text.rich(
+                      TextSpan(children: [
+                        TextSpan(
+                          text: "Wellness",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 28,
+                            color: Color(0xFF003B88),
+                          ),
+                        ),
+                        TextSpan(
+                          text: "ID",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 28,
+                            color: Color(0xFF006FFF),
+                          ),
+                        ),
+                      ]),
+                      overflow: TextOverflow.fade,
+                      softWrap: false,
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 40),
+
+              const Text(
+                "Daftar",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.normal,
+                  color: Color(0xFF00A9FF),
+                ),
+              ),
+
+              const SizedBox(height: 30),
 
               _buildTextField(
                 controller: _nameController,
@@ -193,7 +232,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue,
+                    backgroundColor: Color(0xFF22B3E4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
