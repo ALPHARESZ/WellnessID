@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../widgets/page_header.dart';
 import '../providers/diagnose_provider.dart';
+import '../utils/snackbar_helper.dart';
 
 class IdentityScreen extends StatefulWidget {
   const IdentityScreen({super.key});
@@ -20,11 +21,64 @@ class _IdentityScreenState extends State<IdentityScreen> {
   String gender = "Laki-Laki";
   String alergi = "Tidak";
 
+  void _submit() {
+    final umurText = umurC.text.trim();
+    final tinggiText = tinggiC.text.trim();
+    final beratText = beratC.text.trim();
+
+    if (umurText.isEmpty ||
+        tinggiText.isEmpty ||
+        beratText.isEmpty) {
+      SnackbarHelper.showError(
+        context,
+        "Semua data wajib diisi",
+      );
+      return;
+    }
+
+    final umur = int.tryParse(umurText);
+    final tinggi = double.tryParse(tinggiText);
+    final berat = double.tryParse(beratText);
+
+    if (umur == null || umur <= 0) {
+      SnackbarHelper.showError(
+        context,
+        "Umur harus berupa angka yang valid",
+      );
+      return;
+    }
+
+    if (tinggi == null || tinggi <= 0) {
+      SnackbarHelper.showError(
+        context,
+        "Tinggi badan harus berupa angka yang valid",
+      );
+      return;
+    }
+
+    if (berat == null || berat <= 0) {
+      SnackbarHelper.showError(
+        context,
+        "Berat badan harus berupa angka yang valid",
+      );
+      return;
+    }
+
+    context.read<DiagnosisProvider>().setIdentity(
+      userAge: umur,
+      userGender: gender,
+      userHeight: tinggi,
+      userWeight: berat,
+      userAllergies: alergi,
+    );
+
+    context.push('/symptoms');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -72,12 +126,14 @@ class _IdentityScreenState extends State<IdentityScreen> {
                               _toggleButton(
                                 text: "Laki-Laki",
                                 active: gender == "Laki-Laki",
-                                onTap: () => setState(() => gender = "Laki-Laki"),
+                                onTap: () =>
+                                    setState(() => gender = "Laki-Laki"),
                               ),
                               _toggleButton(
                                 text: "Perempuan",
                                 active: gender == "Perempuan",
-                                onTap: () => setState(() => gender = "Perempuan"),
+                                onTap: () =>
+                                    setState(() => gender = "Perempuan"),
                               ),
                             ],
                           ),
@@ -121,12 +177,14 @@ class _IdentityScreenState extends State<IdentityScreen> {
                               _toggleButton(
                                 text: "Ya",
                                 active: alergi == "Ya",
-                                onTap: () => setState(() => alergi = "Ya"),
+                                onTap: () =>
+                                    setState(() => alergi = "Ya"),
                               ),
                               _toggleButton(
                                 text: "Tidak",
                                 active: alergi == "Tidak",
-                                onTap: () => setState(() => alergi = "Tidak"),
+                                onTap: () =>
+                                    setState(() => alergi = "Tidak"),
                               ),
                             ],
                           ),
@@ -136,21 +194,11 @@ class _IdentityScreenState extends State<IdentityScreen> {
 
                         Center(
                           child: GestureDetector(
-                            onTap: () {
-                              final p = context.read<DiagnosisProvider>();
-                              p.setIdentity(
-                                userAge: int.parse(umurC.text),
-                                userGender: gender,
-                                userHeight: double.parse(tinggiC.text),
-                                userWeight: double.parse(beratC.text),
-                                userAllergies: alergi,
-                              );
-
-                              context.push('/symptoms');
-                            },
+                            onTap: _submit,
                             child: Container(
                               width: 300,
-                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 18),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF22B3E3),
                                 borderRadius: BorderRadius.circular(50),

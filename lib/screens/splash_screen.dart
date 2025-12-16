@@ -23,45 +23,30 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    _logoController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    );
-
-    _textController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
-    _buttonController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
+    _logoController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3));
+    _textController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _buttonController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
 
     _fadeLogo = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _logoController, curve: const Interval(0.0, 0.6)),
     );
 
-    _moveLogo =
-        Tween<Offset>(
-          begin: const Offset(0, 0),
-          end: const Offset(0, -0.4),
-        ).animate(
-          CurvedAnimation(
-            parent: _logoController,
-            curve: const Interval(0.4, 1.0),
-          ),
-        );
+    _moveLogo = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -0.4),
+    ).animate(
+      CurvedAnimation(parent: _logoController, curve: const Interval(0.4, 1.0)),
+    );
 
-    _fadeText = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
+    _fadeText = Tween<double>(begin: 0, end: 1)
+        .animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
 
-    _fadeButton = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _buttonController, curve: Curves.easeIn));
+    _fadeButton = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _buttonController, curve: Curves.easeIn),
+    );
 
     _startAnimation();
   }
@@ -82,39 +67,38 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final orientation = MediaQuery.of(context).orientation;
-    final isLandscape = orientation == Orientation.landscape;
-    final isTablet = size.width > 600;
+    final media = MediaQuery.of(context);
+    final size = media.size;
+    final isLandscape = media.orientation == Orientation.landscape;
+    final isTablet = size.width >= 600;
 
     final logoSize = isLandscape
-        ? (isTablet ? 160.0 : 120.0)
+        ? (isTablet ? 140.0 : 110.0)
         : (isTablet ? 220.0 : 180.0);
 
     final textFontSize = isLandscape
-        ? (isTablet ? 28.0 : 24.0)
+        ? (isTablet ? 26.0 : 22.0)
         : (isTablet ? 34.0 : 28.0);
 
-    final buttonHeight = isLandscape
-        ? (isTablet ? 52.0 : 44.0)
-        : (isTablet ? 56.0 : 48.0);
+    final buttonHeight = isLandscape ? 44.0 : 48.0;
+    final horizontalPadding =
+        isTablet ? size.width * 0.25 : size.width * 0.15;
 
-    final horizontalPadding = isLandscape
-        ? (isTablet ? 120.0 : 80.0)
-        : (isTablet ? 80.0 : 40.0);
-
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: LayoutBuilder(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: LayoutBuilder(
           builder: (context, constraints) {
-            return Center(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: isLandscape ? 8 : 24,
+                    vertical: isLandscape ? 12 : 32,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -127,11 +111,12 @@ class _SplashScreenState extends State<SplashScreen>
                             'assets/images/Logo.jpg',
                             width: logoSize,
                             height: logoSize,
-                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
-                      SizedBox(height: isLandscape ? 16 : 24),
+
+                      SizedBox(height: isLandscape ? 12 : 24),
+
                       FadeTransition(
                         opacity: _fadeText,
                         child: Column(
@@ -147,11 +132,13 @@ class _SplashScreenState extends State<SplashScreen>
                                 children: const [
                                   TextSpan(
                                     text: 'Wellness',
-                                    style: TextStyle(color: Color(0xFF003B88)),
+                                    style:
+                                        TextStyle(color: Color(0xFF003B88)),
                                   ),
                                   TextSpan(
                                     text: 'ID',
-                                    style: TextStyle(color: Color(0xFF006FFF)),
+                                    style:
+                                        TextStyle(color: Color(0xFF006FFF)),
                                   ),
                                 ],
                               ),
@@ -159,37 +146,34 @@ class _SplashScreenState extends State<SplashScreen>
                             const SizedBox(height: 6),
                             Text(
                               'Ayo Cek Kondisi Kamu',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: isLandscape ? 14 : 16,
-                                color: Colors.black,
                                 fontWeight: FontWeight.w600,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: isLandscape ? 24 : 40),
+
+                      SizedBox(height: isLandscape ? 20 : 40),
+
                       FadeTransition(
                         opacity: _fadeButton,
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: horizontalPadding,
-                          ),
+                              horizontal: horizontalPadding),
                           child: SizedBox(
                             width: double.infinity,
                             height: buttonHeight,
                             child: ElevatedButton(
-                              onPressed: () {
-                                context.goNamed('login');
-                              },
+                              onPressed: () => context.goNamed('login'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF22B3E4),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
                                 ),
-                                elevation: 4,
                               ),
                               child: Text(
                                 'Mulai Aplikasi',

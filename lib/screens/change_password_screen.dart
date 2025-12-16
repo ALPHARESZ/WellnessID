@@ -25,15 +25,12 @@ class _ChangePasswordState extends State<ChangePassword> {
     }
 
     final success = await authProvider.checkUser();
-
     if (success) {
       showMessage("Tidak ada pengguna yang login.");
       return;
     }
 
     final registeredEmail = await authProvider.getUserEmail();
-
-    // VALIDASI: Email harus sama dengan email akun login
     if (registeredEmail == null || registeredEmail != inputEmail) {
       showMessage("Email tidak sesuai dengan akun yang sedang digunakan!");
       return;
@@ -43,16 +40,10 @@ class _ChangePasswordState extends State<ChangePassword> {
 
     try {
       await authProvider.sendPasswordResetEmail(inputEmail);
-
-      // Logout pengguna setelah meminta reset password
       await authProvider.logOut();
 
       if (mounted) {
-        showMessage(
-          "Email reset password telah dikirim! Anda akan logout.",
-        );
-
-        // Arahkan ke halaman login
+        showMessage("Email reset password telah dikirim! Anda akan logout.");
         context.go('/login');
       }
     } finally {
@@ -73,7 +64,9 @@ class _ChangePasswordState extends State<ChangePassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xffF6F7FB),
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -83,83 +76,100 @@ class _ChangePasswordState extends State<ChangePassword> {
         ),
         title: const Text(
           "Reset Kata Sandi",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Masukkan Email Anda",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 20,
+                  bottom:
+                      MediaQuery.of(context).viewInsets.bottom + 30,
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
 
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xffEAF1FF),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade300,
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  )
-                ],
-              ),
-              child: TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  hintText: "Email",
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 40),
-
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : sendResetEmail,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff19A7CE),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "Kirim Email Reset",
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Masukkan Email Anda",
                         style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xffEAF1FF),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade300,
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          )
+                        ],
+                      ),
+                      child: TextField(
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 15),
+                          hintText: "Email",
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed:
+                            isLoading ? null : sendResetEmail,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color(0xff19A7CE),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text(
+                                "Kirim Email Reset",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
