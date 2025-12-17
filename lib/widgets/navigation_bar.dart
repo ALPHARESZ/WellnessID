@@ -36,7 +36,7 @@ class AppNavigationBar extends StatelessWidget {
                 : 'assets/images/UnselectedHome.png',
             width: 32,
           ),
-          label: 'Home',
+          label: 'Beranda',
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
@@ -45,7 +45,7 @@ class AppNavigationBar extends StatelessWidget {
                 : 'assets/images/UnselectedMedicine.png',
             width: 32,
           ),
-          label: 'Medicine',
+          label: 'Obat',
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
