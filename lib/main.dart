@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'config/routes.dart';
 import 'providers/auth_provider.dart';
-import '../providers/diagnose_provider.dart';
+import 'providers/diagnose_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

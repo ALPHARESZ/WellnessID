@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -66,11 +65,6 @@ class AuthService {
     }
   }
 
-  Future<UserCredential> logInWithGoogle() async {
-    final credential = await _performGoogleSignIn();
-    return await _auth.signInWithCredential(credential);
-  }
-
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
@@ -118,12 +112,8 @@ class AuthService {
 
   Future<void> logOut() async {
     try {
-      // Sign out dari kedua service
-      // Note: Menggunakan signOut() bukan disconnect() agar user bisa login lagi
-      // tanpa harus memilih akun Google lagi
       await Future.wait([
         _auth.signOut(),
-        GoogleSignIn.instance.signOut(),
       ]);
     } catch (e) {
       throw AuthException('Sign out failed: ${e.toString()}');
@@ -168,97 +158,58 @@ class AuthService {
     }
   }
 
-  Future<AuthCredential> _performGoogleSignIn() async {
-    try {
-      GoogleSignInAccount? googleUser;
+  Future<void> _deleteSubCollection({
+    required String uid,
+    required String collectionName,
+  }) async {
+    final collectionRef = _firestore
+        .collection('users')
+        .doc(uid)
+        .collection(collectionName);
 
-      if (GoogleSignIn.instance.supportsAuthenticate()) {
-        final completer = Completer<GoogleSignInAccount?>();
-        StreamSubscription<GoogleSignInAuthenticationEvent>? subscription;
+    final snapshot = await collectionRef.get();
 
-        subscription = GoogleSignIn.instance.authenticationEvents.listen(
-          (event) {
-            if (!completer.isCompleted) {
-              switch (event) {
-                case GoogleSignInAuthenticationEventSignIn():
-                  completer.complete(event.user);
-                  subscription?.cancel();
-                case GoogleSignInAuthenticationEventSignOut():
-                  completer.complete(null);
-                  subscription?.cancel();
-              }
-            }
-          },
-          onError: (error) {
-            if (!completer.isCompleted) {
-              completer.completeError(error);
-              subscription?.cancel();
-            }
-          },
-        );
-
-        try {
-          await GoogleSignIn.instance.authenticate();
-          googleUser = await completer.future.timeout(
-            const Duration(seconds: 30),
-          );
-        } catch (e) {
-          subscription.cancel();
-          rethrow;
-        }
-      } else {
-        throw AuthException('Google Sign-In tidak didukung pada platform ini');
-      }
-
-      if (googleUser == null) {
-        throw AuthException('Google Sign-In dibatalkan oleh user');
-      }
-
-      final googleAuth = googleUser.authentication;
-      if (googleAuth.idToken == null) {
-        throw AuthException('Gagal mendapatkan ID token dari Google');
-      }
-
-      return GoogleAuthProvider.credential(idToken: googleAuth.idToken);
-    } on GoogleSignInException catch (e) {
-      throw _handleGoogleSignInException(e);
-    } on FirebaseAuthException catch (e) {
-      throw _handleFirebaseAuthException(e);
-    } on TimeoutException {
-      throw AuthException('Google Sign-In timeout. Silakan coba lagi.');
-    } catch (e) {
-      if (e is AuthException) rethrow;
-      throw AuthException('Google Sign-In gagal: ${e.toString()}');
+    for (var doc in snapshot.docs) {
+      await doc.reference.delete();
     }
   }
 
   Future<bool> deleteAccount({
-  required String email,
-  required String password,
-}) async {
-  try {
-    // Re-authenticate
-    final credential = EmailAuthProvider.credential(
-      email: email.trim(),
-      password: password,
-    );
-    User user = _requireUser();
-    await user.reauthenticateWithCredential(credential);
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final user = _requireUser();
 
-    // Hapus data Firestore
-    await _firestore.collection("users").doc(user.uid).delete();
+      // 1️⃣ Re-authenticate
+      final credential = EmailAuthProvider.credential(
+        email: email.trim(),
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
 
-    // Hapus akun Authentication
-    await user.delete();
+      final uid = user.uid;
 
-    return true;
-  } on FirebaseAuthException catch (e) {
-    throw _handleFirebaseAuthException(e);
-  } catch (e) {
-    if (e is AuthException) rethrow;
-    throw AuthException('Failed to delete account: ${e.toString()}');
+      // 2️⃣ Hapus seluruh subcollection user
+      await _deleteSubCollection(uid: uid, collectionName: 'diagnoses');
+      await _deleteSubCollection(uid: uid, collectionName: 'messages');
+      await _deleteSubCollection(uid: uid, collectionName: 'saved_medicines');
+
+      // 👉 Jika ada subcollection lain, tinggal tambah di sini
+
+      // 3️⃣ Hapus dokumen user
+      await _firestore.collection('users').doc(uid).delete();
+
+      // 4️⃣ Hapus akun FirebaseAuth
+      await user.delete();
+
+      return true;
+    } on FirebaseAuthException catch (e) {
+      throw _handleFirebaseAuthException(e);
+    } catch (e) {
+      throw AuthException('Failed to delete account: ${e.toString()}');
+    }
   }
-}
 
   AuthException _handleFirebaseAuthException(FirebaseAuthException e) {
     switch (e.code) {
@@ -313,17 +264,6 @@ class AuthService {
       // Default
       default:
         return AuthException('Error: ${e.message ?? e.code}');
-    }
-  }
-
-  AuthException _handleGoogleSignInException(GoogleSignInException e) {
-    switch (e.code) {
-      case GoogleSignInExceptionCode.canceled:
-        return AuthException('Google Sign-In dibatalkan oleh user');
-      default:
-        return AuthException(
-          'Google Sign-In error: ${e.description ?? e.code.name}',
-        );
     }
   }
 }

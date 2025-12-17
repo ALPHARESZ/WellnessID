@@ -81,9 +81,6 @@ class DiagnoseResultPage extends StatelessWidget {
                                           '/disease-detail',
                                           extra: {
                                             'disease': r.disease,
-                                            'score': r.score,
-                                            'selectedSymptomIds':
-                                                selectedSymptomIds,
                                           },
                                         );
                                       },

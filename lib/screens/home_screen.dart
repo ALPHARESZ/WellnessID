@@ -131,7 +131,7 @@ class HomeScreen extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: GestureDetector(
-                            onTap: () => context.push('/search-disease'),
+                            onTap: () => context.go('/disease-result'),
                             child: Container(
                               height: 135,
                               decoration: BoxDecoration(

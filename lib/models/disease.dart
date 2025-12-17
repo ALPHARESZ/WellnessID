@@ -7,7 +7,7 @@ class Disease {
   final List<String> symptoms;
   final double threshold;
   final String solution;
-  final List<String> mediciness;
+  final List<String> medicines;
 
   Disease({
     required this.id,
@@ -16,7 +16,7 @@ class Disease {
     required this.symptoms,
     required this.threshold,
     required this.solution,
-    required this.mediciness,
+    required this.medicines,
   });
 
   factory Disease.fromFirestore(String id, Map<String, dynamic> data) {
@@ -71,7 +71,7 @@ class Disease {
       symptoms: symptomList,
       threshold: ((data['threshold'] ?? 0.5) as num).toDouble(),
       solution: data['solution'] ?? '',
-      mediciness: medicineList,
+      medicines: medicineList,
     );
   }
 
