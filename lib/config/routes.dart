@@ -11,7 +11,6 @@ import '../screens/identity_screen.dart';
 import '../screens/symptoms_screen.dart';
 import '../screens/diagnose_result_screen.dart';
 import '../screens/disease_detail_screen.dart';
-import '../screens/search_disease_screen.dart';
 import '../screens/disease_result_screen.dart';
 import '../screens/medicine_screen.dart';
 import '../screens/medicine_result_screen.dart';
@@ -89,18 +88,9 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const DiagnoseResultPage(),
     ),
     GoRoute(
-      path: '/search-disease',
-      name: 'search_disease',
-      builder: (context, state) => const SearchDiseaseScreen(),
-    ),
-    GoRoute(
-  path: '/disease-result',
-  builder: (context, state) {
-    final keyword = (state.extra is String && (state.extra as String).isNotEmpty)
-        ? state.extra as String
-        : '';
-    return DiseaseResultScreen(keyword: keyword);
-    },
+      path: '/disease-result',
+      name: 'disease-result',
+      builder: (context, state) => const DiseaseResultScreen(),
     ),
     GoRoute(
       path: '/disease-detail',

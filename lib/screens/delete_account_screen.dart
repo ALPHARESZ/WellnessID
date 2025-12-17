@@ -29,15 +29,13 @@ class _DeleteAccountState extends State<DeleteAccount> {
     );
 
     if (success) {
-      if (mounted) {
-        SnackbarHelper.showSuccess(context, 'Berhasil Hapus Akun!');
-        context.go('/login');
-      }
+      if (!mounted) return;
+      SnackbarHelper.showSuccess(context, 'Berhasil Hapus Akun!');
+      context.go('/login');
     } else {
-      if (mounted) {
-        final errorMessage = authProvider.errorMessage ?? 'Gagal Hapus Akun!';
-        SnackbarHelper.showError(context, errorMessage);
-      }
+      if (!mounted) return;
+      final errorMessage = authProvider.errorMessage ?? 'Gagal Hapus Akun!';
+      SnackbarHelper.showError(context, errorMessage);
     }
   }
 
@@ -62,16 +60,12 @@ class _DeleteAccountState extends State<DeleteAccount> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 const Text(
                   "Akun Anda akan dihapus permanen dan tidak dapat dipulihkan.",
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 24),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -88,7 +82,6 @@ class _DeleteAccountState extends State<DeleteAccount> {
                       ),
                       child: const Text("Batal"),
                     ),
-
                     ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(context);
@@ -115,11 +108,12 @@ class _DeleteAccountState extends State<DeleteAccount> {
     );
   }
 
-  Widget _inputField(
-      {required String label,
-      required TextEditingController controller,
-      bool obscure = false,
-      VoidCallback? onToggle}) {
+  Widget _inputField({
+    required String label,
+    required TextEditingController controller,
+    bool obscure = false,
+    VoidCallback? onToggle,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -134,9 +128,10 @@ class _DeleteAccountState extends State<DeleteAccount> {
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  blurRadius: 6,
-                  offset: const Offset(2, 4))
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 6,
+                offset: const Offset(2, 4),
+              )
             ],
           ),
           child: TextField(
@@ -181,73 +176,92 @@ class _DeleteAccountState extends State<DeleteAccount> {
         centerTitle: true,
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _inputField(
-                label: "Email",
-                controller: emailController,
-                obscure: false),
-
-            const SizedBox(height: 25),
-
-            _inputField(
-              label: "Kata Sandi",
-              controller: passController,
-              obscure: obscure1,
-              onToggle: () {
-                setState(() {
-                  obscure1 = !obscure1;
-                });
-              },
-            ),
-
-            const SizedBox(height: 25),
-
-            _inputField(
-              label: "Konfirmasi Kata Sandi",
-              controller: confirmPassController,
-              obscure: obscure2,
-              onToggle: () {
-                setState(() {
-                  obscure2 = !obscure2;
-                });
-              },
-            ),
-
-            const Spacer(),
-
-            GestureDetector(
-              onTap: _showDeleteAccountDialog,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 6,
-                        offset: const Offset(2, 4))
-                  ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 500, // tablet & desktop friendly
+                  minHeight: constraints.maxHeight,
                 ),
-                alignment: Alignment.center,
-                child: const Text(
-                  "Hapus Akun",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _inputField(
+                        label: "Email",
+                        controller: emailController,
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      _inputField(
+                        label: "Kata Sandi",
+                        controller: passController,
+                        obscure: obscure1,
+                        onToggle: () {
+                          setState(() {
+                            obscure1 = !obscure1;
+                          });
+                        },
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      _inputField(
+                        label: "Konfirmasi Kata Sandi",
+                        controller: confirmPassController,
+                        obscure: obscure2,
+                        onToggle: () {
+                          setState(() {
+                            obscure2 = !obscure2;
+                          });
+                        },
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      GestureDetector(
+                        onTap: _showDeleteAccountDialog,
+                        child: Container(
+                          width: double.infinity,
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 18),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 6,
+                                offset: const Offset(2, 4),
+                              )
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Hapus Akun",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
             ),
-
-            const SizedBox(height: 10),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

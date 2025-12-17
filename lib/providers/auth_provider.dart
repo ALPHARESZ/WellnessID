@@ -118,11 +118,6 @@ class AuthProvider with ChangeNotifier {
     errorPrefix: 'Gagal Masuk!',
   );
 
-  Future<bool> logInWithGoogle() => _executeAuth(
-    _authService.logInWithGoogle,
-    errorPrefix: 'Google Sign-In gagal',
-  );
-
   Future<bool> sendPasswordResetEmail(String email) => _executeAuth(
     () => _authService.sendPasswordResetEmail(email),
     errorPrefix: 'Gagal mengirim email reset',
