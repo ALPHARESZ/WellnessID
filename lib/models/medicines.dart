@@ -15,6 +15,7 @@ class Medicines {
     required this.relatedDiseases,
   });
 
+  /// ✅ Buat dari Firestore (dengan document ID)
   factory Medicines.fromFirestore(String id, Map<String, dynamic> data) {
     return Medicines(
       id: id,
@@ -26,8 +27,22 @@ class Medicines {
     );
   }
 
+  /// ✅ Tambahkan ini agar bisa terima data dari `context.push(extra: item)`
+  factory Medicines.fromMap(Map<String, dynamic> map) {
+    return Medicines(
+      id: map['id'] ?? '',
+      name: map['name'] ?? '',
+      description: map['description'] ?? '',
+      usage: map['usage'] ?? '',
+      sideEffects: map['sideEffects'] ?? '',
+      relatedDiseases: List<String>.from(map['relatedDiseases'] ?? []),
+    );
+  }
+
+  /// ✅ Untuk dikirim balik ke Firestore atau disimpan
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'description': description,
       'usage': usage,

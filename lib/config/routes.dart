@@ -94,11 +94,13 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const SearchDiseaseScreen(),
     ),
     GoRoute(
-      path: '/disease-result',
-      builder: (context, state) {
-        final keyword = state.extra as String;
-        return DiseaseResultScreen(keyword: keyword);
-      },
+  path: '/disease-result',
+  builder: (context, state) {
+    final keyword = (state.extra is String && (state.extra as String).isNotEmpty)
+        ? state.extra as String
+        : '';
+    return DiseaseResultScreen(keyword: keyword);
+    },
     ),
     GoRoute(
       path: '/disease-detail',
@@ -137,7 +139,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/medicine-detail',
       name: 'medicine-detail',
-      builder: (context, state) => const MedicineDetailScreen(),
+      builder: (context, state) => MedicineDetailsScreen(),
     ),
     GoRoute(
       path: '/profile',
