@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../widgets/page_header.dart';
 import '../services/expert_system_service.dart';
 import '../models/symptom.dart';
-import '../providers/diagnose_provider.dart';
 
 class SymptomsPage extends StatefulWidget {
   const SymptomsPage({super.key});
@@ -128,9 +126,6 @@ class _SymptomsPageState extends State<SymptomsPage> {
                               onPressed: selected.isEmpty
                                   ? null
                                   : () {
-                                      context
-                                          .read<DiagnosisProvider>()
-                                          .setSymptoms(selected.toList());
                                       context.push(
                                         '/result',
                                         extra: selected.toList(),

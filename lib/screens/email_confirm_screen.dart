@@ -31,7 +31,9 @@ class _EmailConfirmScreenState extends State<EmailConfirmScreen> {
 
     try {
       await FirebaseAuth.instance
-          .sendPasswordResetEmail(email: emailC.text.trim());
+          .sendPasswordResetEmail(email: email);
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -42,9 +44,11 @@ class _EmailConfirmScreenState extends State<EmailConfirmScreen> {
 
       context.go('/login');
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Gagal mengirim email reset: $e"),
+          content: Text("Gagal mengirim email reset"),
           backgroundColor: Colors.red,
         ),
       );
@@ -59,19 +63,22 @@ class _EmailConfirmScreenState extends State<EmailConfirmScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
-                child: IntrinsicHeight(
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const BouncingScrollPhysics(),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 420, // ⬅️ kunci tablet & web
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 24,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 10),
-
                         /// ================= HEADER =================
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -142,7 +149,9 @@ class _EmailConfirmScreenState extends State<EmailConfirmScreen> {
                         /// ================= EMAIL FIELD =================
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(4),
@@ -157,7 +166,7 @@ class _EmailConfirmScreenState extends State<EmailConfirmScreen> {
                           child: TextField(
                             controller: emailC,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: "Email",
                               hintText: "example@gmail.com",
                               border: InputBorder.none,
@@ -167,13 +176,15 @@ class _EmailConfirmScreenState extends State<EmailConfirmScreen> {
 
                         const SizedBox(height: 40),
 
+                        /// ================= BUTTON =================
                         SizedBox(
                           width: double.infinity,
                           height: 62,
                           child: ElevatedButton(
                             onPressed: _sendResetEmail,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF22B3E3),
+                              backgroundColor:
+                                  const Color(0xFF22B3E3),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(100),
                               ),
