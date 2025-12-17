@@ -26,20 +26,19 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscureConfirm = true;
   bool _isLoading = false;
 
-
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
-    // Validate inputs
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    // Basic validation
     final emailError = Validators.validateEmail(email);
     if (emailError != null) {
       SnackbarHelper.showError(context, emailError);
@@ -52,34 +51,26 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    // Set loading state
     setState(() => _isLoading = true);
 
-    // Call AuthProvider
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.registerWithEmail(
-    email: email,
-    password: password,
-    displayName: _nameController.text.trim(),
-  );
+      email: email,
+      password: password,
+      displayName: _nameController.text.trim(),
+    );
 
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-    // Reset loading state
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
-
-    // Handle result
     if (success) {
-      if (mounted) {
-        SnackbarHelper.showSuccess(context, 'Sign up berhasil!');
-        context.go('/home');
-      }
+      SnackbarHelper.showSuccess(context, 'Sign up berhasil!');
+      context.go('/home');
     } else {
-      if (mounted) {
-        final errorMessage = authProvider.errorMessage ?? 'Sign up gagal';
-        SnackbarHelper.showError(context, errorMessage);
-      }
+      SnackbarHelper.showError(
+        context,
+        authProvider.errorMessage ?? 'Sign up gagal',
+      );
     }
   }
 
@@ -87,183 +78,194 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8FF),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/images/Logo.jpg',   
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.contain,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const BouncingScrollPhysics(),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 420, // 🔑 tablet, web, desktop
                   ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text.rich(
-                      TextSpan(children: [
-                        TextSpan(
-                          text: "Wellness",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 28,
-                            color: Color(0xFF003B88),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 30,
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          /// ================= HEADER =================
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/Logo.jpg',
+                                height: 50,
+                                width: 50,
+                              ),
+                              const SizedBox(width: 10),
+                              RichText(
+                                text: const TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Wellness",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 28,
+                                        color: Color(0xFF003B88),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "ID",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 28,
+                                        color: Color(0xFF006FFF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        TextSpan(
-                          text: "ID",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 28,
-                            color: Color(0xFF006FFF),
+
+                          const SizedBox(height: 40),
+
+                          const Text(
+                            "Daftar",
+                            style: TextStyle(
+                              fontSize: 28,
+                              color: Color(0xFF00A9FF),
+                            ),
                           ),
-                        ),
-                      ]),
-                      overflow: TextOverflow.fade,
-                      softWrap: false,
+
+                          const SizedBox(height: 30),
+
+                          _buildTextField(
+                            controller: _nameController,
+                            label: "Nama",
+                            validator: (v) =>
+                                v == null || v.isEmpty
+                                    ? "Nama tidak boleh kosong"
+                                    : null,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          _buildTextField(
+                            controller: _emailController,
+                            label: "Email",
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return "Email tidak boleh kosong";
+                              }
+                              final valid = RegExp(
+                                      r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                  .hasMatch(v);
+                              return valid
+                                  ? null
+                                  : "Format email tidak valid";
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          _buildTextField(
+                            controller: _passwordController,
+                            label: "Kata Sandi",
+                            obscureText: _obscurePass,
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePass
+                                  ? Icons.visibility
+                                  : Icons.visibility_off),
+                              onPressed: () => setState(
+                                  () => _obscurePass = !_obscurePass),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return "Password tidak boleh kosong";
+                              }
+                              if (v.length < 6) {
+                                return "Password minimal 6 karakter";
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          _buildTextField(
+                            controller: _confirmPasswordController,
+                            label: "Konfirmasi Kata Sandi",
+                            obscureText: _obscureConfirm,
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscureConfirm
+                                  ? Icons.visibility
+                                  : Icons.visibility_off),
+                              onPressed: () => setState(() =>
+                                  _obscureConfirm = !_obscureConfirm),
+                            ),
+                            validator: (v) =>
+                                v != _passwordController.text
+                                    ? "Password tidak sesuai"
+                                    : null,
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 55,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _register,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color(0xFF22B3E4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: const Text(
+                                "Daftar",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Sudah Punya Akun? "),
+                              GestureDetector(
+                                onTap: () => context.go('/login'),
+                                child: const Text(
+                                  "Masuk",
+                                  style: TextStyle(
+                                    color: Colors.lightBlue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 40),
-
-              const Text(
-                "Daftar",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.normal,
-                  color: Color(0xFF00A9FF),
                 ),
               ),
-
-              const SizedBox(height: 30),
-
-              _buildTextField(
-                controller: _nameController,
-                label: "Nama",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Nama tidak boleh kosong";
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildTextField(
-                controller: _emailController,
-                label: "Email",
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Email tidak boleh kosong";
-                  }
-                  bool validEmail = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
-                      .hasMatch(value);
-                  if (!validEmail) {
-                    return "Format email tidak valid";
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildTextField(
-                controller: _passwordController,
-                label: "Kata Sandi",
-                obscureText: _obscurePass,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                      _obscurePass ? Icons.visibility : Icons.visibility_off),
-                  onPressed: () {
-                    setState(() => _obscurePass = !_obscurePass);
-                  },
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Password tidak boleh kosong";
-                  }
-                  if (value.length < 6) {
-                    return "Password minimal 6 karakter";
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildTextField(
-                controller: _confirmPasswordController,
-                label: "Konfirmasi Kata Sandi",
-                obscureText: _obscureConfirm,
-                suffixIcon: IconButton(
-                  icon: Icon(_obscureConfirm
-                      ? Icons.visibility
-                      : Icons.visibility_off),
-                  onPressed: () {
-                    setState(() => _obscureConfirm = !_obscureConfirm);
-                  },
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Konfirmasi password tidak boleh kosong";
-                  }
-                  if (value != _passwordController.text) {
-                    return "Password tidak sesuai";
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 40),
-
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF22B3E4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 5,
-                  ),
-                  child: const Text(
-                    "Daftar",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Sudah Punya Akun? "),
-                  GestureDetector(
-                    onTap: () => context.go('/login'),
-                    child: const Text(
-                      "Masuk",
-                      style: TextStyle(
-                          color: Colors.lightBlue,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

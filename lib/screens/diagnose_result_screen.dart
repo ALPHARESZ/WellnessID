@@ -7,6 +7,7 @@ import '../widgets/card_list.dart';
 import '../widgets/page_header.dart';
 import '../providers/diagnose_provider.dart';
 import '../services/diagnose_service.dart';
+import '../services/symptoms_service.dart';
 
 class DiagnoseResultPage extends StatelessWidget {
   const DiagnoseResultPage({super.key});
@@ -103,21 +104,25 @@ class DiagnoseResultPage extends StatelessWidget {
                           height: 56,
                           child: ElevatedButton(
                             onPressed: () async {
-                              final provider =
-                                  context.read<DiagnosisProvider>();
+                              final provider = context.read<DiagnosisProvider>();
+                              final symptomService = SymptomService();
 
+                              // 1. Simpan diseases
                               provider.setDiseases(
-                                results
-                                    .map(
-                                      (r) => {
-                                        "id": r.disease.id,
-                                        "name": r.disease.name,
-                                        "score": r.score,
-                                      },
-                                    )
-                                    .toList(),
+                                results.map((r) => {
+                                  "id": r.disease.id,
+                                  "name": r.disease.name,
+                                  "score": r.score,
+                                }).toList(),
                               );
 
+                              // 2. Ambil nama gejala berdasarkan ID
+                              final symptomMaps =
+                                  await symptomService.getSymptomsByIds(selectedSymptomIds);
+
+                              provider.setSymptoms(symptomMaps);
+
+                              // 3. Simpan ke Firestore
                               await DiagnosisService().saveDiagnosis(
                                 diagnosisData: provider.toFirestore(),
                               );

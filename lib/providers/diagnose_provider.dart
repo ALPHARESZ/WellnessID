@@ -9,7 +9,7 @@ class DiagnosisProvider extends ChangeNotifier {
   String allergies = "";
 
   // Selected symptoms
-  List<String> symptoms = [];
+  List<Map<String, dynamic>> symptoms = [];
 
   // Diagnosed diseases
   List<Map<String, dynamic>> diseases = [];
@@ -30,7 +30,7 @@ class DiagnosisProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSymptoms(List<String> selectedSymptoms) {
+  void setSymptoms(List<Map<String, dynamic>> selectedSymptoms) {
     symptoms = selectedSymptoms;
     notifyListeners();
   }
