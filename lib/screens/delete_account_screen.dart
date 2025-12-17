@@ -20,6 +20,32 @@ class _DeleteAccountState extends State<DeleteAccount> {
   bool obscure1 = true;
   bool obscure2 = true;
 
+  bool _validateInput() {
+    if (emailController.text.trim().isEmpty) {
+      SnackbarHelper.showError(context, 'Email tidak boleh kosong');
+      return false;
+    }
+
+    if (passController.text.isEmpty ||
+        confirmPassController.text.isEmpty) {
+      SnackbarHelper.showError(
+        context,
+        'Password dan konfirmasi password wajib diisi',
+      );
+      return false;
+    }
+
+    if (passController.text != confirmPassController.text) {
+      SnackbarHelper.showError(
+        context,
+        'Password dan konfirmasi password tidak sama',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   Future<void> _deleteAccount() async {
     final authProvider = context.read<AuthProvider>();
 
@@ -226,7 +252,11 @@ class _DeleteAccountState extends State<DeleteAccount> {
                       const SizedBox(height: 40),
 
                       GestureDetector(
-                        onTap: _showDeleteAccountDialog,
+                        onTap: () {
+                          if (_validateInput()) {
+                            _showDeleteAccountDialog();
+                          }
+                        },
                         child: Container(
                           width: double.infinity,
                           padding:
