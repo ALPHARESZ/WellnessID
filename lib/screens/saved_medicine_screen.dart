@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/search.dart';
 import '../widgets/page_header.dart';
@@ -18,44 +19,13 @@ class SavedMedicineScreen extends StatefulWidget {
 
 class _SavedMedicineScreenState extends State<SavedMedicineScreen> {
   final MedicinesService _medicineService = MedicinesService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  List<Medicines> savedMedicines = [];
-  bool loading = true;
   String searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedMedicines();
-  }
-
-  /// 🔹 Ambil data obat tersimpan dari Firestore berdasarkan user login
-  Future<void> _loadSavedMedicines() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Silakan login terlebih dahulu."),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      setState(() {
-        loading = false;
-      });
-      return;
-    }
-
-    final data = await _medicineService.getSavedMedicines(user.uid);
-    setState(() {
-      savedMedicines = data;
-      loading = false;
-    });
-  }
 
   /// 🔹 Hapus obat dari Firestore
   Future<void> _deleteMedicine(Medicines medicine) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _auth.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -67,7 +37,6 @@ class _SavedMedicineScreenState extends State<SavedMedicineScreen> {
     }
 
     await _medicineService.deleteSavedMedicine(user.uid, medicine.id);
-    await _loadSavedMedicines();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -80,9 +49,21 @@ class _SavedMedicineScreenState extends State<SavedMedicineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredList = savedMedicines.where((m) {
-      return m.name.toLowerCase().contains(searchQuery.toLowerCase());
-    }).toList();
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text(
+            "Silakan login terlebih dahulu.",
+            style: TextStyle(
+              fontFamily: "Poppins",
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -99,104 +80,143 @@ class _SavedMedicineScreenState extends State<SavedMedicineScreen> {
             ),
           ),
           body: SafeArea(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1000),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
 
-                            /// 🔍 Search bar
-                            SearchBarWidget(
-                              hint: "Cari Obat Tersimpan di sini",
-                              icon: Icons.search,
-                              onChanged: (value) {
-                                setState(() {
-                                  searchQuery = value;
-                                });
-                              },
+                  /// 🔍 Search bar
+                  SearchBarWidget(
+                    hint: "Cari Obat Tersimpan di sini",
+                    icon: Icons.search,
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// 🔄 StreamBuilder: mendengarkan data Firestore secara real-time
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .collection('saved_medicines')
+                          .orderBy('dateSaved', descending: true)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Center(
+                            child: Text(
+                              "Tidak ada obat tersimpan",
+                              style: TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 18,
+                                color: Colors.grey.shade500,
+                              ),
                             ),
+                          );
+                        }
 
-                            const SizedBox(height: 20),
+                        final docs = snapshot.data!.docs;
+                        final medicines = docs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return Medicines(
+                            id: doc.id,
+                            name: data['name'] ?? '',
+                            description: data['description'] ?? '',
+                            usage: data['usage'] ?? '',
+                            sideEffects: data['sideEffects'] ?? '',
+                            relatedDiseases: List<String>.from(
+                                data['relatedDiseases'] ?? []),
+                          );
+                        }).toList();
 
-                            /// 🔄 Daftar Obat
-                            if (filteredList.isEmpty)
-                              SizedBox(
-                                height: MediaQuery.of(context).size.height * 0.5,
-                                child: Center(
-                                  child: Text(
-                                    "Tidak ada obat tersimpan",
-                                    style: TextStyle(
-                                      fontFamily: "Poppins",
-                                      fontSize: 18,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            else
-                              ListView.builder(
-                                itemCount: filteredList.length,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  final item = filteredList[index];
-                                  return CardList(
-                                    title: item.name,
-                                    subtitle: "Deskripsi: ${item.description}",
-                                    trailing: GestureDetector(
-                                      onTap: () {
-                                        showDialog(
-                                          context: context,
-                                          barrierDismissible: false,
-                                          barrierColor: Colors.black.withOpacity(0.3),
-                                          builder: (context) {
-                                            return ConfirmationPopup(
-                                              title: "Hapus Obat?",
-                                              onConfirm: () {
-                                                Navigator.pop(context);
-                                                _deleteMedicine(item);
-                                              },
-                                              onCancel: () {
-                                                Navigator.pop(context);
-                                              },
-                                            );
-                                          },
-                                        );
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          Icons.delete,
-                                          size: isWideScreen ? 26 : 22,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                    onTap: () {
-                                      context.push('/medicine-detail', extra: item);
+                        // 🔎 Filter berdasarkan pencarian
+                        final filteredList = medicines.where((m) {
+                          return m.name
+                              .toLowerCase()
+                              .contains(searchQuery.toLowerCase());
+                        }).toList();
+
+                        if (filteredList.isEmpty) {
+                          return Center(
+                            child: Text(
+                              "Tidak ada obat ditemukan.",
+                              style: TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 18,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          );
+                        }
+
+                        // ✅ Tampilkan daftar obat tersimpan
+                        return ListView.builder(
+                          itemCount: filteredList.length,
+                          itemBuilder: (context, index) {
+                            final item = filteredList[index];
+                            return CardList(
+                              title: item.name,
+                              subtitle: "Deskripsi: ${item.description}",
+                              trailing: GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    barrierColor: Colors.black.withOpacity(0.3),
+                                    builder: (context) {
+                                      return ConfirmationPopup(
+                                        title: "Hapus Obat?",
+                                        onConfirm: () {
+                                          Navigator.pop(context);
+                                          _deleteMedicine(item);
+                                        },
+                                        onCancel: () {
+                                          Navigator.pop(context);
+                                        },
+                                      );
                                     },
                                   );
                                 },
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.delete,
+                                    size: isWideScreen ? 26 : 22,
+                                    color: Colors.red,
+                                  ),
+                                ),
                               ),
-                          ],
-                        ),
-                      ),
+                              onTap: () {
+                                context.push('/medicine-detail', extra: item);
+                              },
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
 }
- 
