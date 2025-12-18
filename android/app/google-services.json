@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "683500123076-7d3g69j3jf02iv0p3ci9uoqgl39tf5n9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wellnessid",
+            "certificate_hash": "ecc9fd3baf1a6429fbadc8bab126c92f59a7e7b4"
+          }
+        },
+        {
           "client_id": "683500123076-48rkvdp9t7rfl4gt075s04endbrk435h.apps.googleusercontent.com",
           "client_type": 3
         }
