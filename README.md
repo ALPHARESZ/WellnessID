@@ -24,6 +24,7 @@ Dokumen **Software Requirements Specification (SRS)** berisi spesifikasi kebutuh
 - Kebutuhan fungsional & non-fungsional
 - Desain sistem
 - Perencanaan pengembangan aplikasi
+
 📄 **Akses dokumen SRS:**  [Google Drive](https://drive.google.com/drive/folders/1bHz5-nfa3nzCEooFZ3mFbb2wR7IpRqSh)
 
 
@@ -45,7 +46,6 @@ Dokumen **Software Requirements Specification (SRS)** berisi spesifikasi kebutuh
 - Dart
 - Provider (State Management)
 - go_router (Navigation)
-- pin_code_fields
 - shared_preferences
 - cupertino_icons
 ### Backend & Services
@@ -111,6 +111,7 @@ Digunakan untuk proses:
 - Login pengguna
 - Registrasi akun baru
 - Manajemen sesi autentikasi pengguna
+
 Firebase Authentication diintegrasikan langsung ke aplikasi Flutter tanpa autentikasi tambahan dari backend pihak ketiga.
 ### 🗄️ Cloud Firestore
 Digunakan sebagai **database utama** untuk:
@@ -118,13 +119,15 @@ Digunakan sebagai **database utama** untuk:
 - Menyimpan data penyakit
 - Menyimpan data gejala
 - Menyimpan data obat dan hasil diagnosis
+
 Firestore dipilih karena bersifat **real-time**, scalable, dan terintegrasi langsung dengan Firebase Authentication.
 ### ⚙️ Konfigurasi Firebase
 - Aplikasi **tidak menggunakan file `.env`**
-- Seluruh konfigurasi Firebase dilakukan melalui file:
+- Seluruh konfigurasi Firebase dilakukan melalui file: `google-services.json`
+- File tersebut diletakkan pada direktori: ```android/app/```
 
 
-##  🚀Get Started
+## 🚀Get Started
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/ALPHARESZ/WellnessID.git
@@ -187,7 +190,7 @@ android/app/
 #### 5️⃣ Konfigurasi Firebase pada Android
 ##### Edit file:
 ```
-android/settings.build.gradle.kts
+android/settings.gradle.kts
 ```
 
 Tambahkan pada bagian `plugins`:
